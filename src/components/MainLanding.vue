@@ -1,6 +1,7 @@
 <template>
     <div>
-        <div id='particles-js'></div>
+        <div id='particles-js'>
+        </div>
         <div id='login'>
             <div class="container-fluid">
                 <div class="row">
@@ -10,10 +11,14 @@
                 </div>
                 <div class="row">
                     <div class="offset-sm-4 col-sm-2">
-                        <button type="button" class="btn btn-lg btn-outline-light btn-block">Log-in</button>
+                        <router-link :to="{ name: 'voters' }">
+                            <button type="button" class="btn btn-lg btn-outline-light btn-block">Voters</button>
+                        </router-link>
                     </div>
                     <div class="col-sm-2">
-                        <button type="button" class="btn btn-lg btn-outline-light btn-block">Register</button>
+                        <router-link :to="{ name: 'admins' }">
+                            <button type="button" class="btn btn-lg btn-outline-light btn-block">Admins</button>
+                        </router-link>
                     </div>
                 </div>
             </div>
@@ -26,7 +31,7 @@
     import ParticleSettings from './../assets/particles.json';
 
     export default {
-        name: 'ParticlesJS',
+        name: 'MainLanding',
 
         created() {
             this.$nextTick(() => {
@@ -54,5 +59,9 @@
         -moz-transform: translateX(-50%) translateY(-50%);
         -webkit-transform: translateX(-50%) translateY(-50%);
         transform: translateX(-50%) translateY(-50%);
+    }
+
+    a {
+        text-decoration: none;
     }
 </style>
