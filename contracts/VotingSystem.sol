@@ -64,25 +64,25 @@ contract VotingSystem {
 
     // Kill Contract on Election End;
 
-    function registerCandidate(string calldata name) external // onlyOnCandidateRegistrationTimeFrame
+    function registerCandidate(string memory name) public // onlyOnCandidateRegistrationTimeFrame
     {
         candidates[strHash(name)] = Candidate(name, 0);
     }
 
-    function registerVoter(string calldata name) external // onlyOnVoterRegistrationTimeFrame
+    function registerVoter(string memory name) public // onlyOnVoterRegistrationTimeFrame
     {
         voters[strHash(name)] = Voter(name, true);
     }
 
-    function voteCandidate(string calldata candidateNamename, string calldata voterName)
-        external
+    function voteCandidate(string memory candidateNamename, string memory voterName)
+        public
         onlyValidVoter(voterName)
     // onlyOnVotingTimeFrame
     {
         candidates[strHash(candidateNamename)].votes += 1;
     }
 
-    function getVotes(string calldata name) external view returns (uint256) {
+    function getVotes(string memory name) public view returns (uint256) {
         return candidates[strHash(name)].votes;
     }
 

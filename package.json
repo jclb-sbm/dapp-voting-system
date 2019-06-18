@@ -5,21 +5,29 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "test": "truffle test",
+    "coverage": "solidity-coverage",
+    "server": "testrpc-sc --port 8555 -l 0xfffffffffff -g 0x01"
   },
   "dependencies": {
     "bootstrap": "^4.3.1",
     "bootstrap-vue": "^2.0.0-rc.23",
     "core-js": "^2.6.5",
+    "jquery": "^3.4.1",
     "particles.js": "^2.0.0",
+    "solidity-coverage": "^0.5.11",
+    "truffle": "^5.0.22",
     "vue": "^2.6.10",
-    "vue-router": "^3.0.6"
+    "vue-router": "^3.0.6",
+    "web3": "^1.0.0-beta.55"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.8.0",
     "@vue/cli-plugin-eslint": "^3.8.0",
     "@vue/cli-service": "^3.8.0",
     "babel-eslint": "^10.0.1",
+    "coveralls": "^3.0.4",
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
     "vue-template-compiler": "^2.6.10"
