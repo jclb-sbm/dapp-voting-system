@@ -10,6 +10,9 @@
             <button v-on:click.prevent ="getCandidate">
                 Get Candidate
             </button>
+            <button v-on:click.prevent ="getVotes">
+                Get Candidate Votes
+            </button>
         </form>
 
     </div>
@@ -59,6 +62,17 @@
                     })
                     .then(result => {
                         console.log(result);
+                    });
+            },
+            getVotes: function () {
+                this.contract
+                    .methods
+                    .getVotes(this.candidateName)
+                    .call({
+                        from: this.defaultAccount
+                    })
+                    .then(result => {
+                        console.log(result.toString());
                     });
             }
         }

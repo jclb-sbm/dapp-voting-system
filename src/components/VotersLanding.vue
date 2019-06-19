@@ -1,12 +1,70 @@
 <template>
     <div>
         <h1>Voters</h1>
+
+        <form>
+            <input type="text" v-model="voterName"/>
+            <button v-on:click.prevent ="registerVoter">
+                Register Voter
+            </button>
+
+            <input type="text" v-model="candidateName"/>
+            <button v-on:click.prevent ="voteCandidate">
+                Vote Candidate
+            </button>
+        </form>
+
     </div>
 </template>
 
 <script>
-    export default {
+    const Web3 = require('web3');
+    const web3 = new Web3('ws://localhost:8545', null, {});
 
+    export default {
+        data() {
+            return {
+                candidateName: null,
+                voterName: null,
+                contract: null,
+                defaultAccount: null,
+            }
+        },
+        mounted: async function() {
+            const VotingSystem = require('./../../build/contracts/VotingSystem.json');
+
+            const contractABI = VotingSystem.abi;
+            const contractAddress = VotingSystem.networks[5777].address;
+
+            let accounts = await web3.eth.getAccounts();
+            this.defaultAccount = accounts[0];
+
+            this.contract = new web3.eth.Contract(contractABI, contractAddress);
+        },
+        methods: {
+            registerVoter: function () {
+                this.contract
+                    .methods
+                    .registerVoter(this.voterName)
+                    .send({
+                        from: this.defaultAccount
+                    })
+                    .then((result) => {
+                        console.log(result);
+                    });
+            },
+            voteCandidate: function () {
+                this.contract
+                    .methods
+                    .voteCandidate(this.candidateName, this.voterName)
+                    .send({
+                        from: this.defaultAccount
+                    })
+                    .then((result) => {
+                        console.log(result);
+                    });
+            }
+        }
     }
 </script>
 
