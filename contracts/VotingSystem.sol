@@ -11,6 +11,7 @@ contract VotingSystem {
 
     struct Candidate {
         string name;
+        string imgHash;
         // add more information
 
         uint votes;
@@ -64,17 +65,24 @@ contract VotingSystem {
 
     // Kill Contract on Election End;
 
-    function registerCandidate(string memory name) public // onlyOnCandidateRegistrationTimeFrame
+    function registerCandidate(string memory name, string memory imgHash)
+        public
+        // onlyOnCandidateRegistrationTimeFrame
     {
-        candidates[strHash(name)] = Candidate(name, 0);
+        candidates[strHash(name)] = Candidate(name, imgHash, 0);
     }
 
-    function getCandidate(string memory name) public view returns (string memory)
+    function getCandidate(string memory name)
+        public
+        view
+        returns (string memory)
     {
         return candidates[strHash(name)].name;
     }
 
-    function registerVoter(string memory name) public // onlyOnVoterRegistrationTimeFrame
+    function registerVoter(string memory name)
+        public
+        // onlyOnVoterRegistrationTimeFrame
     {
         voters[strHash(name)] = Voter(name, true);
     }
@@ -82,16 +90,24 @@ contract VotingSystem {
     function voteCandidate(string memory candidateName, string memory voterName)
         public
         onlyValidVoter(voterName)
-    // onlyOnVotingTimeFrame
+        // onlyOnVotingTimeFrame
     {
         candidates[strHash(candidateName)].votes += 1;
     }
 
-    function getVotes(string memory name) public view returns (uint256) {
+    function getVotes(string memory name)
+        public
+        view
+        returns (uint256)
+    {
         return candidates[strHash(name)].votes;
     }
 
-    function strHash(string memory str) private pure returns (bytes32) {
+    function strHash(string memory str)
+        private
+        pure
+        returns (bytes32)
+    {
         return keccak256(abi.encodePacked(str));
     }
 }

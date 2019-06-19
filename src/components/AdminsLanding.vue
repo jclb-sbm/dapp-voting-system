@@ -4,6 +4,10 @@
 
         <form>
             <input type="text" v-model="candidateName" />
+            <b-form-file plain @change="captureFile" />
+            <button @click.prevent="uploadPhoto">
+                Upload Photo
+            </button>
             <button @click.prevent="registerCandidate">
                 Register Candidate
             </button>
@@ -15,10 +19,6 @@
             </button>
         </form>
 
-        <b-form-file plain @change="captureFile" />
-        <button @click.prevent="uploadPhoto">
-            Upload Photo
-        </button>
 
     </div>
 </template>
@@ -35,6 +35,8 @@
         data() {
             return {
                 candidateName: null,
+                candidatePhotoHash: null,
+
                 contract: null,
                 defaultAccount: null,
 
@@ -56,13 +58,14 @@
             registerCandidate: function () {
                 this.contract
                     .methods
-                    .registerCandidate(this.candidateName)
+                    .registerCandidate(this.candidateName, this.candidatePhotoHash)
                     .send({
-                        from: this.defaultAccount
+                        from: this.defaultAccount,
+                        gas: 1000000
                     })
-                    .then((result) => {
-                        console.log(result);
-                    });
+
+                    this.$parent.candidateList.push(this.candidateName);
+                    console.log(this.$parent.candidateList[this.$parent.candidateList.length - 1]);
             },
             getCandidate: function () {
                 this.contract
@@ -103,12 +106,11 @@
                 }
             },
             uploadPhoto: function () {
-                console.log(this.buffer);
                 ipfs.add(this.buffer)
                     .then(hashedImg => {
-                        let imgHash = hashedImg[0].hash;
-                        console.log(imgHash);
-                        console.log(`https://ipfs.io/ipfs/${imgHash}`);
+                        this.candidatePhotoHash = hashedImg[0].hash;
+                        console.log(this.candidatePhotoHash);
+                        console.log(`https://ipfs.io/ipfs/${this.candidatePhotoHash}`);
                     })
             }
         }
