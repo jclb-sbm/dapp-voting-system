@@ -6,7 +6,7 @@ contract("VotingSystemTest", accounts => {
 
         const votingSystem = await VotingSystem.new();
 
-        await votingSystem.registerCandidate("A");
+        await votingSystem.registerCandidate("A", 'imgHash');
         await votingSystem.registerVoter("B");
         await votingSystem.voteCandidate("A", "B");
 

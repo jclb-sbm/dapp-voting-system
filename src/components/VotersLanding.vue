@@ -4,13 +4,17 @@
 
         <form>
             <input type="text" v-model="voterName"/>
-            <button v-on:click.prevent ="registerVoter">
+            <button @click.prevent="registerVoter">
                 Register Voter
             </button>
 
             <input type="text" v-model="candidateName"/>
-            <button v-on:click.prevent ="voteCandidate">
+            <button @click.prevent="voteCandidate">
                 Vote Candidate
+            </button>
+
+            <button @click.prevent="getCandidates" >
+                Get Candidate List
             </button>
         </form>
 
@@ -24,8 +28,8 @@
     export default {
         data() {
             return {
-                candidateName: null,
                 voterName: null,
+                candidateName: null,
                 contract: null,
                 defaultAccount: null,
             }
@@ -42,27 +46,19 @@
             this.contract = new web3.eth.Contract(contractABI, contractAddress);
         },
         methods: {
-            registerVoter: function () {
-                this.contract
-                    .methods
-                    .registerVoter(this.voterName)
-                    .send({
-                        from: this.defaultAccount
-                    })
-                    .then((result) => {
-                        console.log(result);
-                    });
+            registerVoter: async function () {
+                await this.contract.methods.registerVoter(this.voterName).send({from: this.defaultAccount});
             },
-            voteCandidate: function () {
-                this.contract
-                    .methods
-                    .voteCandidate(this.candidateName, this.voterName)
-                    .send({
-                        from: this.defaultAccount
-                    })
-                    .then((result) => {
-                        console.log(result);
-                    });
+            voteCandidate: async function () {
+                await this.contract.methods.voteCandidate(this.candidateName, this.voterName).send({from: this.defaultAccount});
+            },
+            getCandidates: async function () {
+                let candidateCount = await this.contract.methods.getCandidateCount().call();
+                console.log(candidateCount.toString());
+                for (let i=0; i < candidateCount; i++) {
+                    let candidate = await this.contract.methods.getCandidateByIndex(i).call();
+                    console.log(candidate);
+                }
             }
         }
     }

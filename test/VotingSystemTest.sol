@@ -8,7 +8,7 @@ contract VotingSystemTest {
     function testcase_validCandidate_validVoter() public {
         VotingSystem votingSystem = new VotingSystem();
 
-        votingSystem.registerCandidate("A");
+        votingSystem.registerCandidate("A", "imgHash");
         votingSystem.registerVoter("B");
         votingSystem.voteCandidate("A", "B");
 

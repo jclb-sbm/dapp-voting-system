@@ -22,8 +22,8 @@ contract VotingSystem {
         uint256 end;
     }
 
-    mapping (bytes32 => Candidate) candidates;
-    mapping (bytes32 => Voter) voters;
+    Candidate[] candidates;
+    Voter[] voters;
     TimeFrame candidateRegistration = TimeFrame(0, 0);
     TimeFrame voterRegistration = TimeFrame(0, 0);
     TimeFrame votingTimeFrame = TimeFrame(0, 0);
@@ -55,9 +55,11 @@ contract VotingSystem {
         _;
     }
 
-    modifier onlyValidVoter(string memory voterName) {
+    modifier onlyValidVoter(string memory _voterName) {
+        (, bool valid) = getVoterByName(_voterName);
+
         require(
-            voters[strHash(voterName)].valid == true,
+            valid == true,
             "You are not a Valid Voter"
         );
         _;
@@ -65,42 +67,124 @@ contract VotingSystem {
 
     // Kill Contract on Election End;
 
-    function registerCandidate(string memory name, string memory imgHash)
+
+    function registerCandidate(string memory _name, string memory _imgHash)
         public
         // onlyOnCandidateRegistrationTimeFrame
     {
-        candidates[strHash(name)] = Candidate(name, imgHash, 0);
+        candidates.push(Candidate(_name, _imgHash, 0));
     }
 
-    function getCandidate(string memory name)
-        public
-        view
-        returns (string memory)
-    {
-        return candidates[strHash(name)].name;
-    }
-
-    function registerVoter(string memory name)
+    function registerVoter(string memory _name)
         public
         // onlyOnVoterRegistrationTimeFrame
     {
-        voters[strHash(name)] = Voter(name, true);
+        voters.push(Voter(_name, true));
     }
 
-    function voteCandidate(string memory candidateName, string memory voterName)
+    function voteCandidate(string memory _name, string memory _voterName)
         public
-        onlyValidVoter(voterName)
+        onlyValidVoter(_voterName)
         // onlyOnVotingTimeFrame
     {
-        candidates[strHash(candidateName)].votes += 1;
+        for (uint256 i = 0; i < candidates.length; i++) {
+            if (strEquals(candidates[i].name, _name)) {
+                candidates[i].votes += 1;
+            }
+        }
     }
 
-    function getVotes(string memory name)
+    function getCandidateByIndex(uint256 _index)
+        public
+        view
+        returns (string memory, string memory, uint256)
+    {
+
+        return
+        (
+            candidates[_index].name,
+            candidates[_index].imgHash,
+            candidates[_index].votes
+        );
+
+
+    }
+
+    function getCandidateByName(string memory _name)
+        public
+        view
+        returns (string memory, string memory, uint256)
+    {
+        for (uint256 i = 0; i < candidates.length; i++) {
+            if (strEquals(candidates[i].name, _name)) {
+
+                return
+                (
+                    candidates[i].name,
+                    candidates[i].imgHash,
+                    candidates[i].votes
+                );
+
+            }
+        }
+    }
+
+    function getCandidateCount()
         public
         view
         returns (uint256)
     {
-        return candidates[strHash(name)].votes;
+        return candidates.length;
+    }
+
+
+    function getVotes(string memory _name)
+        public
+        view
+        returns (uint256)
+    {
+        (, , uint256 votes) = getCandidateByName(_name);
+        return votes;
+    }
+
+    function getVoterByIndex(uint256 _index)
+        public
+        view
+        returns (string memory, bool)
+    {
+
+        return
+        (
+            voters[_index].name,
+            voters[_index].valid
+        );
+
+    }
+
+    function getVoterByName(string memory _name)
+        public
+        view
+        returns (string memory, bool)
+    {
+        for (uint256 i = 0; i < voters.length; i++) {
+            if (strEquals(voters[i].name, _name)) {
+
+                return
+                (
+                    voters[i].name,
+                    voters[i].valid
+                );
+
+            }
+        }
+    }
+
+    function getVoterCount()
+        public
+        view
+        returns (uint256)
+    {
+        return voters.length;
     }
 
     function strHash(string memory str)
@@ -110,4 +194,13 @@ contract VotingSystem {
     {
         return keccak256(abi.encodePacked(str));
     }
+
+    function strEquals(string memory a, string memory b)
+        private
+        pure
+        returns (bool)
+    {
+        return strHash(a) == strHash(b);
+    }
+
 }

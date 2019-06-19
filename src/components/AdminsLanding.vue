@@ -55,39 +55,23 @@
             this.contract = new web3.eth.Contract(contractABI, contractAddress);
         },
         methods: {
-            registerCandidate: function () {
-                this.contract
-                    .methods
-                    .registerCandidate(this.candidateName, this.candidatePhotoHash)
-                    .send({
+            registerCandidate: async function () {
+                await this.contract.methods.registerCandidate(this.candidateName, this.candidatePhotoHash).send({
                         from: this.defaultAccount,
                         gas: 1000000
                     })
-
-                    this.$parent.candidateList.push(this.candidateName);
-                    console.log(this.$parent.candidateList[this.$parent.candidateList.length - 1]);
             },
-            getCandidate: function () {
-                this.contract
-                    .methods
-                    .getCandidate(this.candidateName)
-                    .call({
-                        from: this.defaultAccount
-                    })
-                    .then(result => {
-                        console.log(result);
-                    });
+            getCandidate: async function () {
+                let candidate = await this.contract.methods.getCandidateByName(this.candidateName).call({
+                                    from: this.defaultAccount
+                                })
+                console.log(candidate);
             },
-            getVotes: function () {
-                this.contract
-                    .methods
-                    .getVotes(this.candidateName)
-                    .call({
-                        from: this.defaultAccount
-                    })
-                    .then(result => {
-                        console.log(result.toString());
-                    });
+            getVotes: async function () {
+                let votes = await this.contract.methods.getVotes(this.candidateName).call({
+                                from: this.defaultAccount
+                            })
+                console.log(votes.toString())
             },
             async convertToBuffer(reader) {
                 return Buffer.from(reader);
