@@ -1,7 +1,7 @@
 <template>
     <div>
         <h1>Admins</h1>
-        
+
         <form>
             <input type="text" v-model="candidateName"/>
             <button v-on:click.prevent ="registerCandidate">
@@ -28,15 +28,14 @@
             }
         },
         mounted: async function() {
-            const Migrations = require('./../../build/contracts/Migrations.json');
             const VotingSystem = require('./../../build/contracts/VotingSystem.json');
 
             const contractABI = VotingSystem.abi;
-            const contractAddress = Migrations.networks[5777].address;
+            const contractAddress = VotingSystem.networks[5777].address;
 
             let accounts = await web3.eth.getAccounts();
-            this.defaultAccount = accounts[0];            
-            
+            this.defaultAccount = accounts[0];
+
             this.contract = new web3.eth.Contract(contractABI, contractAddress);
         },
         methods: {
@@ -45,7 +44,7 @@
                     .methods
                     .registerCandidate(this.candidateName)
                     .send({
-                        from: this.defaultAccount    
+                        from: this.defaultAccount
                     })
                     .then((result) => {
                         console.log(result);
