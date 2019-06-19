@@ -69,17 +69,22 @@ contract VotingSystem {
         candidates[strHash(name)] = Candidate(name, 0);
     }
 
+    function getCandidate(string memory name) public view returns (string memory)
+    {
+        return candidates[strHash(name)].name;
+    }
+
     function registerVoter(string memory name) public // onlyOnVoterRegistrationTimeFrame
     {
         voters[strHash(name)] = Voter(name, true);
     }
 
-    function voteCandidate(string memory candidateNamename, string memory voterName)
+    function voteCandidate(string memory candidateName, string memory voterName)
         public
         onlyValidVoter(voterName)
     // onlyOnVotingTimeFrame
     {
-        candidates[strHash(candidateNamename)].votes += 1;
+        candidates[strHash(candidateName)].votes += 1;
     }
 
     function getVotes(string memory name) public view returns (uint256) {

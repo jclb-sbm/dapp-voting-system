@@ -6,6 +6,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
+    "migrate": "truffle migrate",
     "test": "truffle test",
     "coverage": "solidity-coverage",
     "server": "testrpc-sc --port 8555 -l 0xfffffffffff -g 0x01"
