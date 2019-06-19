@@ -15,6 +15,7 @@
     "bootstrap": "^4.3.1",
     "bootstrap-vue": "^2.0.0-rc.23",
     "core-js": "^2.6.5",
+    "ipfs": "^0.36.4",
     "jquery": "^3.4.1",
     "particles.js": "^2.0.0",
     "solidity-coverage": "^0.5.11",
