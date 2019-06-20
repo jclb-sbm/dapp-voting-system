@@ -25,6 +25,15 @@ let router  = new Router({
             }
         },
         {
+            path: '/admin/:id',
+            name: 'admin',
+            component: resolve => {
+                require.ensure(['@/components/Admin.vue'], () => {
+                    resolve(require('@/components/Admin.vue'));
+                });
+            }
+        },
+        {
             path: '/voters',
             name: 'voters',
             component: resolve => {
@@ -33,6 +42,15 @@ let router  = new Router({
                 });
             }
         },
+        {
+            path: '/voter',
+            name: 'voter',
+            component: resolve => {
+                require.ensure(['@/components/Voter.vue'], () => {
+                    resolve(require('@/components/Voter.vue'));
+                });
+            }
+        }
     ]
 });
 

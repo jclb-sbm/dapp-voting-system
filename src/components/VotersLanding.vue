@@ -1,54 +1,42 @@
 <template>
     <div id="mainContainer">
 
-        <div v-if="voterLoggedIn">
-            <form>
-                <input type="text" v-model="candidateName" />
-                <button @click.prevent="voteCandidate">
-                    Vote Candidate
-                </button>
-            </form>
-
-            <div v-for="candidate in candidateList" :key="candidate[0]">
-                <b-card :title="candidate.name" :img-src="candidate.imgHash" img-alt="Image" img-top tag="article"
-                    class="mb-2">
-                    <b-card-text>
-                        Votes: {{ candidate.votes }}
-                    </b-card-text>
-                </b-card>
-            </div>
+        <div id='particles-js'>
         </div>
-        <div v-else>
-            <div id='particles-js'>
-            </div>
-            <div class="center">
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <form>
-                                <div class="form-group">
-                                    <input type="email" class="form-control form-control-lg transparent-input"
-                                        id="voterLoginInput" placeholder="Enter Voter Name Here">
+
+        <div class="center">
+            <div class="container-fluid">
+
+                <b-alert v-model="showDismissibleAlert" variant="dark" dismissible>
+                    Invalid Voter Log-in: {{ invalidLoginReason }}
+                </b-alert>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <form>
+                            <div class="form-group">
+                                <input type="text" class="form-control form-control-lg transparent-input"
+                                    v-model="voterName" id="voterLoginInput" placeholder="Enter Voter Name Here">
+                            </div>
+                            <div class="row">
+                                <div class="col-4 offset-4">
+                                    <button @click.prevent="loginVoter"
+                                        class="btn btn-outline-light btn-block">Proceed</button>
                                 </div>
-                                <div class="row">
-                                    <div class="col-4 offset-4">
-                                        <button type="submit" class="btn btn-outline-light btn-block">Proceed</button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </div>
 
+            </div>
         </div>
     </div>
-
 </template>
 
 <script>
     require('particles.js')
     import ParticleSettings from './../assets/particles.json';
+    import router from './../router.js';
 
     const Web3 = require('web3');
     const web3 = new Web3('ws://localhost:8545', null, {});
@@ -56,12 +44,13 @@
     export default {
         data() {
             return {
-                voterLoggedIn: false,
+                showDismissibleAlert: false,
+                invalidLoginReason: null,
+
                 voterName: null,
-                candidateName: null,
+                voter: null,
                 contract: null,
                 defaultAccount: null,
-                candidateList: [],
             }
         },
         created() {
@@ -80,33 +69,34 @@
 
             this.contract = new web3.eth.Contract(contractABI, contractAddress);
 
-            this.loadCandidates();
         },
         methods: {
             initParticlesJS() {
                 particlesJS('particles-js', ParticleSettings);
             },
-            voteCandidate: async function () {
-                await this.contract.methods.voteCandidate(this.candidateName, this.voterName).send({
-                    from: this.defaultAccount
-                });
-            },
-            loadCandidates: async function () {
-                let candidateCount = await this.contract.methods.getCandidateCount().call();
+            loginVoter: async function () {
+                let voterTuple = await this.contract.methods.getVoterByName(this.voterName).call();
 
-                this.candidateList = [];
-                for (let i = 0; i < candidateCount; i++) {
-
-                    let candidateTuple = await this.contract.methods.getCandidateByIndex(i).call();
-                    let candidate = {
-                        name: candidateTuple[0],
-                        imgHash: `http://127.0.0.1:8080/ipfs/${candidateTuple[1]}`,
-                        votes: candidateTuple[2]
-                    }
-                    this.candidateList.push(candidate);
-
+                this.voter = {
+                    name: voterTuple[0],
+                    valid: voterTuple[1]
                 }
-            }
+
+                if (this.voter.name === "") {
+                    this.showDismissibleAlert = true;
+                    this.invalidLoginReason = "You are not a registered Voter"
+                    return;
+                }
+
+                if (this.voter.valid === false) {
+                    this.showDismissibleAlert = true;
+                    this.invalidLoginReason = "You are no longer a Valid Voter"
+                    return;
+                }
+
+                this.gIsVoterLoggedIn = true;
+                router.push({ name: 'voter', params: { id: this.voter.name, valid: this.voter.valid }});
+            },
         }
     }
 </script>
