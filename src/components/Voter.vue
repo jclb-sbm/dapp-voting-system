@@ -1,21 +1,67 @@
 <template>
-    <div class="cotainer-fluid">
-        <div class="row">
-            <div class="col-12">
-                <div class="card-deck">
-                    <div v-for="candidate in candidateList" :key="candidate[0]">
-                        <div class="card" style="width: 18rem;">
-                            <img class="card-img-top" :src="candidate.imgHash" alt="Card image cap">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ candidate.name }}</h5>
-                                <a href="#" class="btn btn-primary">Vote</a>
+        <div id='mainContainer' class="container-fluid">
+            <div class="row">
+                <div class="col-6 offset-4">
+                    <div class="card-deck">
+                        <div v-for="candidate in candidateList" :key="candidate[0]">
+                            <div class="card" style="width: 18rem;">
+                                <img class="card-img-top" :src="candidate.imgHash" alt="Card image cap">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ candidate.name }}</h5>
+                                    <a href="#" class="btn btn-primary">Vote</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6 offset-4">
+                    <div class="card-deck">
+                        <div v-for="candidate in candidateList" :key="candidate[0]">
+                            <div class="card" style="width: 18rem;">
+                                <img class="card-img-top" :src="candidate.imgHash" alt="Card image cap">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ candidate.name }}</h5>
+                                    <a href="#" class="btn btn-primary">Vote</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6 offset-4">
+                    <div class="card-deck">
+                        <div v-for="candidate in candidateList" :key="candidate[0]">
+                            <div class="card" style="width: 18rem;">
+                                <img class="card-img-top" :src="candidate.imgHash" alt="Card image cap">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ candidate.name }}</h5>
+                                    <a href="#" class="btn btn-primary">Vote</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6 offset-4">
+                    <div class="card-deck">
+                        <div v-for="candidate in candidateList" :key="candidate[0]">
+                            <div class="card" style="width: 18rem;">
+                                <img class="card-img-top" :src="candidate.imgHash" alt="Card image cap">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ candidate.name }}</h5>
+                                    <a href="#" class="btn btn-primary">Vote</a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+
 
         <!-- <button @click.prevent="logoutVoter">
             Log Out
@@ -84,5 +130,7 @@
 </script>
 
 <style scoped>
-
+    #mainContainer {
+        background: #000000de;
+    }
 </style>

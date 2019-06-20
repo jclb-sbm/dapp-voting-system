@@ -3,7 +3,8 @@
         <h1>Admins</h1>
 
         <form>
-            <input type="text" v-model="candidateName" />
+            <input type="text" v-model="candidateName" placeholder="Name"/>
+            <input type="text" v-model="candidateCandidacy"/>
             <b-form-file plain @change="captureFile" />
             <button @click.prevent="uploadPhoto">
                 Upload Photo
@@ -40,6 +41,7 @@
             return {
                 candidateName: null,
                 candidatePhotoHash: null,
+                candidateCandidacy: "President",
 
                 voterName: null,
 
@@ -61,25 +63,82 @@
             this.contract = new web3.eth.Contract(contractABI, contractAddress);
         },
         methods: {
+            populateSampleCandidates: async function () {
+                // 2 presidents
+                let presidents = [
+                                    {
+                                        candidateName: 'President 1',
+                                        candidatePhotoHash: 'Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc',
+                                        candidateCandidacy: 'President'
+                                    },
+                                    {
+                                        candidateName: 'President 2',
+                                        candidatePhotoHash: 'Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc',
+                                        candidateCandidacy: 'President'
+                                    }
+                                ];
+
+                let vicePresidents = [
+                                    {
+                                        candidateName: 'Vice President 1',
+                                        candidatePhotoHash: 'Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc',
+                                        candidateCandidacy: 'Vice President'
+                                    },
+                                    {
+                                        candidateName: 'Vice President 2',
+                                        candidatePhotoHash: 'Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc',
+                                        candidateCandidacy: 'Vice President'
+                                    }
+                                ];
+
+                for (let i=0; i < 2; i++) {
+                    await this.contract.methods
+                            .registerCandidate(presidents[i].candidateName,
+                                               presidents[i].candidatePhotoHash,
+                                               presidents[i].candidateCandidacy)
+                            .send({
+                                from: this.defaultAccount,
+                                gas: 1000000
+                            })
+
+                    await this.contract.methods
+                            .registerCandidate(vicePresidents[i].candidateName,
+                                               vicePresidents[i].candidatePhotoHash,
+                                               vicePresidents[i].candidateCandidacy)
+                            .send({
+                                from: this.defaultAccount,
+                                gas: 1000000
+                            })
+                }
+            },
             registerCandidate: async function () {
-                await this.contract.methods.registerCandidate(this.candidateName, this.candidatePhotoHash).send({
+                await this.contract.methods.registerCandidate(web3.utils.asciiToHex(this.candidateName),
+                                                              web3.utils.asciiToHex(this.candidatePhotoHash),
+                                                              this.candidateCandidacy).send({
                     from: this.defaultAccount,
                     gas: 1000000
                 })
             },
             registerVoter: async function () {
-                await this.contract.methods.registerVoter(this.voterName).send({
+                await this.contract.methods.registerVoter(web3.utils.asciiToHex(this.voterName)).send({
                     from: this.defaultAccount
                 });
             },
             getCandidate: async function () {
-                let candidate = await this.contract.methods.getCandidateByName(this.candidateName).call({
+                let candidate = await this.contract.methods.getCandidateByName(web3.utils.asciiToHex(this.candidateName),
+                                                                               this.candidateCandidacy).call({
                     from: this.defaultAccount
                 })
+
                 console.log(candidate);
+
+                console.log(web3.utils.hexToUtf8(candidate[0]));
+                console.log(web3.utils.hexToUtf8(candidate[1]));
+                console.log(candidate[2].toString());
             },
             getVotes: async function () {
-                let votes = await this.contract.methods.getVotes(this.candidateName).call({
+                let votes = await this.contract.methods.getVotes(web3.utils.asciiToHex(this.candidateName),
+                                                                 web3.utils.asciiToHex(this.candidateCandidacy)).call({
                     from: this.defaultAccount
                 })
                 console.log(votes.toString())
