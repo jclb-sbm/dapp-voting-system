@@ -17,6 +17,11 @@
             <button @click.prevent="getVotes">
                 Get Candidate Votes
             </button>
+
+            <input type="text" v-model="voterName" />
+            <button @click.prevent="registerVoter">
+                Register Voter
+            </button>
         </form>
 
 
@@ -36,6 +41,8 @@
             return {
                 candidateName: null,
                 candidatePhotoHash: null,
+
+                voterName: null,
 
                 contract: null,
                 defaultAccount: null,
@@ -57,35 +64,38 @@
         methods: {
             registerCandidate: async function () {
                 await this.contract.methods.registerCandidate(this.candidateName, this.candidatePhotoHash).send({
-                        from: this.defaultAccount,
-                        gas: 1000000
-                    })
+                    from: this.defaultAccount,
+                    gas: 1000000
+                })
+            },
+            registerVoter: async function () {
+                await this.contract.methods.registerVoter(this.voterName).send({
+                    from: this.defaultAccount
+                });
             },
             getCandidate: async function () {
                 let candidate = await this.contract.methods.getCandidateByName(this.candidateName).call({
-                                    from: this.defaultAccount
-                                })
+                    from: this.defaultAccount
+                })
                 console.log(candidate);
             },
             getVotes: async function () {
                 let votes = await this.contract.methods.getVotes(this.candidateName).call({
-                                from: this.defaultAccount
-                            })
+                    from: this.defaultAccount
+                })
                 console.log(votes.toString())
             },
             async convertToBuffer(reader) {
                 return Buffer.from(reader);
             },
             captureFile(file) {
-                console.log(file);
                 const reader = new FileReader();
                 if (typeof file !== 'undefined') {
                     reader.readAsArrayBuffer(file.target.files[0]);
                     reader.onloadend = async () => {
                         this.buffer = await this.convertToBuffer(reader.result);
                     };
-                }
-                else {
+                } else {
                     this.buffer = '';
                 }
             },
@@ -93,7 +103,6 @@
                 ipfs.add(this.buffer)
                     .then(hashedImg => {
                         this.candidatePhotoHash = hashedImg[0].hash;
-                        console.log(this.candidatePhotoHash);
                         console.log(`https://ipfs.io/ipfs/${this.candidatePhotoHash}`);
                     })
             }

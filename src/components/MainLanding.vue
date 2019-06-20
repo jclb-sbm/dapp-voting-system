@@ -2,7 +2,7 @@
     <div>
         <div id='particles-js'>
         </div>
-        <div id='login'>
+        <div class='center'>
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-sm-12">
@@ -52,7 +52,7 @@
         background: #000000de;
     }
 
-    #login {
+    .center {
         position: absolute;
         top: 50%;
         left: 50%;

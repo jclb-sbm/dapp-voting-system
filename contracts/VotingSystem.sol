@@ -203,4 +203,11 @@ contract VotingSystem {
         return strHash(a) == strHash(b);
     }
 
+
+    //TODO
+    // Set Voter Validity (after voting must be invalid)
+    // Check If Voter is Registerd
+
+
+
 }
