@@ -75,7 +75,16 @@
                 particlesJS('particles-js', ParticleSettings);
             },
             loginVoter: async function () {
-                let voterTuple = await this.contract.methods.getVoterByName(this.voterName).call();
+                let voterTuple = await this.contract
+                                           .methods
+                                           .getVoterByName(web3.utils.asciiToHex(this.voterName))
+                                           .call();
+
+                if (voterTuple === null) {
+                    this.showDismissibleAlert = true;
+                    this.invalidLoginReason = "No Retrieved Data."
+                    return;
+                }
 
                 this.voter = {
                     name: voterTuple[0],
@@ -95,7 +104,7 @@
                 }
 
                 this.gIsVoterLoggedIn = true;
-                router.push({ name: 'voter', params: { id: this.voter.name, valid: this.voter.valid }});
+                router.push({ name: 'voter', params: { id: web3.utils.hexToUtf8(this.voter.name), valid: this.voter.valid }});
             },
         }
     }

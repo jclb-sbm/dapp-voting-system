@@ -113,7 +113,7 @@
             },
             registerCandidate: async function () {
                 await this.contract.methods.registerCandidate(web3.utils.asciiToHex(this.candidateName),
-                                                              web3.utils.asciiToHex(this.candidatePhotoHash),
+                                                              this.candidatePhotoHash,
                                                               this.candidateCandidacy).send({
                     from: this.defaultAccount,
                     gas: 1000000
