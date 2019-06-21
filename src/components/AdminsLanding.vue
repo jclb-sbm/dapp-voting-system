@@ -89,14 +89,14 @@
                         <form>
                             <div class="form-group">
                                 <label for="voterName">Voter Name:</label>
-                                <input id="voterName" type="text" class="form-control bg-transparent text-white" placeholder="Enter Voter Name">
+                                <input id="voterName" v-model="voterName" type="text" class="form-control bg-transparent text-white" placeholder="Enter Voter Name">
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
             <div slot="modal-footer" class="w-100 d-flex justify-content-center">
-                <button class="btn btn-light">
+                <button class="btn btn-light" @click.prevent="registerVoter">
                     Register Voter
                 </button>
             </div>
