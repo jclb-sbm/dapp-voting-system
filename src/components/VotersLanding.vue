@@ -12,7 +12,12 @@
                 </b-alert>
 
                 <div class="row">
-                    <div class="col-sm-12">
+                    <div class="col-12">
+                        <h1 class="display-4 text-white">Voter Login:</h1>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
                         <form>
                             <div class="form-group">
                                 <input type="text" class="form-control form-control-lg transparent-input"

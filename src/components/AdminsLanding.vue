@@ -1,29 +1,105 @@
 <template>
-    <div>
-        <h1>Admins</h1>
+    <div id="mainContainer">
+        <div id="buttonsContainer" class="container-fluid">
+            <div class="row">
+                <div class="col-12 d-flex justify-content-center">
+                    <h1 class="display-2 text-white">Admin Page</h1>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3 offset-3">
+                    <button class="btn btn-lg btn-outline-light btn-block mt-4">
+                        Setup Election
+                    </button>
+                </div>
+                <div class="col-3">
+                    <button class="btn btn-lg btn-outline-light btn-block mt-4">
+                        Publish Results
+                    </button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3 offset-3">
+                    <button class="btn btn-lg btn-outline-light btn-block mt-4" v-b-modal.regCandidateModal>
+                        Register Candidate
+                    </button>
+                </div>
+                <div class="col-3">
+                    <button class="btn btn-lg btn-outline-light btn-block mt-4" v-b-modal.regVoterModal>
+                        Register Voter
+                    </button>
+                </div>
+            </div>
+        </div>
 
-        <form>
-            <input type="text" v-model="candidateName" placeholder="Name"/>
-            <input type="text" v-model="candidateCandidacy"/>
-            <b-form-file plain @change="captureFile" />
-            <button @click.prevent="uploadPhoto">
-                Upload Photo
-            </button>
-            <button @click.prevent="registerCandidate">
-                Register Candidate
-            </button>
-            <button @click.prevent="getCandidate">
-                Get Candidate
-            </button>
-            <button @click.prevent="getVotes">
-                Get Candidate Votes
-            </button>
+        <b-modal id="regCandidateModal" header-border-variant="secondary" footer-border-variant="secondary"
+                                        header-bg-variant="main" header-text-variant="light"
+                                        body-bg-variant="main" body-text-variant="light"
+                                        footer-bg-variant="main" footer-text-variant="light">
+            <div class="container-fluid modal-container" >
+                <div class="row">
+                    <div class="col-12">
+                        <form>
+                            <div class="form-group">
+                                <label for="candidateName">Candidate Name:</label>
+                                <input id="candidateName" type="text" class="form-control bg-transparent text-white" placeholder="Enter Candidate Name">
+                            </div>
 
-            <input type="text" v-model="voterName" />
-            <button @click.prevent="registerVoter">
-                Register Voter
-            </button>
-        </form>
+                            <div class="form-group">
+                                <label for="candidatePartyList">Party List:</label>
+                                <input id="candidatePartyList" type="text" class="form-control bg-transparent text-white" placeholder="Enter Party List">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="candidacy">Running for:</label>
+                                <select id="candidacy" class="custom-select bg-transparent text-white">
+                                    <option value="" selected>Choose Candidacy</option>
+                                    <option value="President">President</option>
+                                    <option value="Vice President">Vice President</option>
+                                    <option value="Senator">Senator</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="candidatePicture">Candidate Picture</label>
+                                <div class="custom-file">
+                                    <input id="candidatePicture" type="file" class="custom-file-input" accept="image/*">
+                                    <label for="candidatePicture" class="custom-file-label">Choose Picture</label>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div slot="modal-footer" class="w-100 d-flex justify-content-center">
+                <button class="btn btn-light">
+                    Register Candidate
+                </button>
+            </div>
+        </b-modal>
+
+        <b-modal id="regVoterModal" header-border-variant="secondary" footer-border-variant="secondary"
+                                        header-bg-variant="main" header-text-variant="light"
+                                        body-bg-variant="main" body-text-variant="light"
+                                        footer-bg-variant="main" footer-text-variant="light">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <form>
+                            <div class="form-group">
+                                <label for="voterName">Voter Name:</label>
+                                <input id="voterName" type="text" class="form-control bg-transparent text-white" placeholder="Enter Voter Name">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div slot="modal-footer" class="w-100 d-flex justify-content-center">
+                <button class="btn btn-light">
+                    Register Voter
+                </button>
+            </div>
+        </b-modal>
 
     </div>
 </template>
@@ -63,58 +139,10 @@
             this.contract = new web3.eth.Contract(contractABI, contractAddress);
         },
         methods: {
-            populateSampleCandidates: async function () {
-                // 2 presidents
-                let presidents = [
-                                    {
-                                        candidateName: 'President 1',
-                                        candidatePhotoHash: 'Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc',
-                                        candidateCandidacy: 'President'
-                                    },
-                                    {
-                                        candidateName: 'President 2',
-                                        candidatePhotoHash: 'Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc',
-                                        candidateCandidacy: 'President'
-                                    }
-                                ];
-
-                let vicePresidents = [
-                                    {
-                                        candidateName: 'Vice President 1',
-                                        candidatePhotoHash: 'Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc',
-                                        candidateCandidacy: 'Vice President'
-                                    },
-                                    {
-                                        candidateName: 'Vice President 2',
-                                        candidatePhotoHash: 'Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc',
-                                        candidateCandidacy: 'Vice President'
-                                    }
-                                ];
-
-                for (let i=0; i < 2; i++) {
-                    await this.contract.methods
-                            .registerCandidate(presidents[i].candidateName,
-                                               presidents[i].candidatePhotoHash,
-                                               presidents[i].candidateCandidacy)
-                            .send({
-                                from: this.defaultAccount,
-                                gas: 1000000
-                            })
-
-                    await this.contract.methods
-                            .registerCandidate(vicePresidents[i].candidateName,
-                                               vicePresidents[i].candidatePhotoHash,
-                                               vicePresidents[i].candidateCandidacy)
-                            .send({
-                                from: this.defaultAccount,
-                                gas: 1000000
-                            })
-                }
-            },
             registerCandidate: async function () {
                 await this.contract.methods.registerCandidate(web3.utils.asciiToHex(this.candidateName),
-                                                              this.candidatePhotoHash,
-                                                              this.candidateCandidacy).send({
+                    this.candidatePhotoHash,
+                    this.candidateCandidacy).send({
                     from: this.defaultAccount,
                     gas: 1000000
                 })
@@ -125,8 +153,9 @@
                 });
             },
             getCandidate: async function () {
-                let candidate = await this.contract.methods.getCandidateByName(web3.utils.asciiToHex(this.candidateName),
-                                                                               this.candidateCandidacy).call({
+                let candidate = await this.contract.methods.getCandidateByName(web3.utils.asciiToHex(this
+                        .candidateName),
+                    this.candidateCandidacy).call({
                     from: this.defaultAccount
                 })
 
@@ -138,7 +167,7 @@
             },
             getVotes: async function () {
                 let votes = await this.contract.methods.getVotes(web3.utils.asciiToHex(this.candidateName),
-                                                                 web3.utils.asciiToHex(this.candidateCandidacy)).call({
+                    web3.utils.asciiToHex(this.candidateCandidacy)).call({
                     from: this.defaultAccount
                 })
                 console.log(votes.toString())
@@ -168,7 +197,37 @@
     }
 </script>
 
-
 <style scoped>
+    #mainContainer {
+        background: #000000de;
+        padding-top: 30vh;
+        height: 100vh;
+    }
 
+    .form-control:focus {
+        border-color: #FFFFFF;
+        box-shadow: inset 0 .5px .5px rgba(0, 0, 0, 0.075), 0 0 8px rgba(255, 255, 255);
+    }
+
+    input::-webkit-input-placeholder {
+        color: rgba(255, 255, 255, 0.75) !important;
+    }
+
+    input:-moz-placeholder { /* Firefox 18- */
+        color:  rgba(255, 255, 255, 0.75) !important;
+    }
+
+    input::-moz-placeholder {  /* Firefox 19+ */
+        color:  rgba(255, 255, 255, 0.75) !important;
+    }
+
+    input:-ms-input-placeholder {
+        color:  rgba(255, 255, 255, 0.75) !important;
+    }
+</style>
+
+<style lang="scss">
+    @import 'assets/custom.scss';
+    @import '~bootstrap/scss/bootstrap.scss';
+    @import '~bootstrap-vue/src/index.scss';
 </style>

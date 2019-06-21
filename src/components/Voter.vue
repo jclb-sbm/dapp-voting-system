@@ -45,7 +45,7 @@
                                 </div>
                                 <div class="card-footer">
                                     <div class="custom-control custom-radio">
-                                        <input type="radio" :name="candidate.name" :value="candidate.name" v-model="chosenPres" class="custom-control-input"
+                                        <input type="radio" :name="candidate.name" :value="candidate.name" v-model="chosenVicePres" class="custom-control-input"
                                         :id="candidate.name">
                                         <label class="custom-control-label" :for="candidate.name">Vote as Vice President</label>
                                     </div>
@@ -155,6 +155,7 @@
                                 {name: 'Senator Z', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0}],
 
                 chosenPres: null,
+                chosenVicePres: null,
                 chosenSenators: [],
             }
         },
