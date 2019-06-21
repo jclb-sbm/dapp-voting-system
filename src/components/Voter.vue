@@ -1,16 +1,21 @@
 <template>
         <div id='mainContainer' class="container-fluid">
             <div class="row">
-                <div class="col-6 offset-4">
-                    <div class="card-deck">
+                <div class="col-12">
+                    <h1 class="display-4 text-white">Presidents</h1>
+                    <div class="card-deck d-flex justify-content-center">
                         <div v-for="candidate in presCandidates" :key="candidate[0]">
-                            <div class="card" style="width: 18rem;">
+                            <div class="card border-light text-white bg-transparent mb-3" style="width: 18rem;">
                                 <img class="card-img-top" :src="candidate.imgHash" alt="Card image cap">
                                 <div class="card-body">
+
                                     <h5 class="card-title">{{ candidate.name }}</h5>
-                                    <!-- <div class="card-text">
-                                        Votes: {{ candidate.votes }}
-                                    </div> -->
+
+                                    <div class="card-text">
+                                        Party List
+                                    </div>
+                                </div>
+                                <div class="card-footer">
                                     <div class="custom-control custom-radio">
                                         <input type="radio" :name="candidate.name" :value="candidate.name" v-model="chosenPres" class="custom-control-input"
                                         :id="candidate.name">
@@ -25,21 +30,24 @@
 
             <div class="row">
                 <div class="col-12">
-                    <div class="card-deck">
-                        <div v-for="candidate in senCandidates" :key="candidate[0]">
-                            <div class="card" style="width: 15rem;">
+                    <h1 class="display-4 text-white">Vice Presidents</h1>
+                    <div class="card-deck d-flex justify-content-center">
+                        <div v-for="candidate in vicePresCandidates" :key="candidate[0]">
+                            <div class="card border-light text-white bg-transparent mb-3" style="width: 18rem;">
                                 <img class="card-img-top" :src="candidate.imgHash" alt="Card image cap">
                                 <div class="card-body">
-                                    <h5 class="card-title">{{ candidate.name }}</h5>
-                                    <!-- <div class="card-text">
-                                        Votes: {{ candidate.votes }}
-                                    </div> -->
 
-                                    <div class="custom-control custom-checkbox">
-                                        <input class="custom-control-input" type="checkbox" :id="candidate.name" :value="candidate.name" v-model="chosenSenators"/>
-                                        <label class="custom-control-label" :for="candidate.name ">
-                                            Vote as Senator
-                                        </label>
+                                    <h5 class="card-title">{{ candidate.name }}</h5>
+
+                                    <div class="card-text">
+                                        Party List
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="custom-control custom-radio">
+                                        <input type="radio" :name="candidate.name" :value="candidate.name" v-model="chosenPres" class="custom-control-input"
+                                        :id="candidate.name">
+                                        <label class="custom-control-label" :for="candidate.name">Vote as Vice President</label>
                                     </div>
                                 </div>
                             </div>
@@ -49,23 +57,55 @@
             </div>
 
             <div class="row">
-                <div class="col-1 offset-5">
-                    <button class="btn btn-light" @click="finishVoting">
+                <div class="col-12">
+                    <h1 class="display-4 text-white">Senators</h1>
+                    <div class="card-deck d-flex justify-content-center">
+                        <div v-for="candidate in senCandidates" :key="candidate[0]">
+
+                            <div class="card border-light text-white bg-transparent mb-3" style="width: 15rem;">
+
+                                <!-- <div class="card-header">
+                                    <h4>{{ candidate.name }}</h4>
+                                </div> -->
+
+                                <img class="card-img-top" :src="candidate.imgHash" alt="Card image cap">
+                                <div class="card-body">
+                                    <!-- <h5 class="card-title">Party list</h5> -->
+                                    <h4 class="card-title">{{ candidate.name }}</h4>
+                                    <div class="card-text">
+                                        Party List
+                                    </div>
+
+
+                                </div>
+
+                                <div class="card-footer">
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" type="checkbox" :id="candidate.name" :value="candidate.name" v-model="chosenSenators"/>
+                                        <label class="custom-control-label" :for="candidate.name ">
+                                            Vote as Senator
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-4 offset-4 d-flex justify-content-center">
+                    <button id="votingButton" class="btn btn-lg btn-outline-light btn-block" @click="finishVoting">
                         Finish Voting
                     </button>
                 </div>
             </div>
 
-
-
-        <!-- <button @click.prevent="logoutVoter">
-            Log Out
-        </button> -->
         </div>
 </template>
 
 <script>
-import { timingSafeEqual } from 'crypto';
     const Web3 = require('web3');
     const web3 = new Web3('ws://localhost:8545', null, {});
 
@@ -82,19 +122,37 @@ import { timingSafeEqual } from 'crypto';
                 contract: null,
                 defaultAccount: null,
 
-                presCandidates: [],
-                senCandidates: [{name: 'SenA', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
-                                {name: 'SenB', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
-                                {name: 'SenC', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
-                                {name: 'SenD', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
-                                {name: 'SenE', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
-                                {name: 'SenG', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
-                                {name: 'SenH', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
-                                {name: 'SenI', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
-                                {name: 'SenJ', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
-                                {name: 'SenK', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
-                                {name: 'SenL', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
-                                {name: 'SenM', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0}],
+                presCandidates: [{name: 'President A', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                 {name: 'President B', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0}],
+
+                vicePresCandidates: [{name: 'Vice President A', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                     {name: 'Vice President B', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0}],
+
+                senCandidates: [{name: 'Senator A', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator B', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator C', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator D', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator E', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator F', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator G', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator H', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator I', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator J', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator K', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator L', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator M', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator N', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator O', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator P', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator Q', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator R', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator S', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator T', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator U', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator W', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator X', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator Y', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0},
+                                {name: 'Senator Z', imgHash: 'https://ipfs.io/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 0}],
 
                 chosenPres: null,
                 chosenSenators: [],
@@ -112,7 +170,7 @@ import { timingSafeEqual } from 'crypto';
             this.contract = new web3.eth.Contract(contractABI, contractAddress);
             this.voterName = this.$route.params.id;
 
-            this.loadPresidents();
+            // this.loadPresidents();
         },
         methods: {
             voteCandidate: async function (candidateName, candidacy) {
@@ -156,5 +214,16 @@ import { timingSafeEqual } from 'crypto';
 <style scoped>
     #mainContainer {
         background: #000000de;
+        padding: 25px;
+    }
+
+    #votingButton {
+        margin-top: 30px;
+        margin-bottom: 20px;
+    }
+
+    .card {
+        margin-top: 20px;
+        margin-bottom: 10px;
     }
 </style>

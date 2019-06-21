@@ -87,7 +87,7 @@
                 }
 
                 this.voter = {
-                    name: voterTuple[0],
+                    name: web3.utils.hexToUtf8(voterTuple[0]),
                     valid: voterTuple[1]
                 }
 
@@ -104,7 +104,7 @@
                 }
 
                 this.gIsVoterLoggedIn = true;
-                router.push({ name: 'voter', params: { id: web3.utils.hexToUtf8(this.voter.name), valid: this.voter.valid }});
+                router.push({ name: 'voter', params: { id: this.voter.name, valid: this.voter.valid }});
             },
         }
     }
