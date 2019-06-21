@@ -42,18 +42,18 @@
                         <form>
                             <div class="form-group">
                                 <label for="candidateName">Candidate Name:</label>
-                                <input id="candidateName" type="text" class="form-control bg-transparent text-white" placeholder="Enter Candidate Name">
+                                <input id="candidateName" v-model="candidate.name" type="text" class="form-control bg-transparent text-white" placeholder="Enter Candidate Name">
                             </div>
 
                             <div class="form-group">
                                 <label for="candidatePartyList">Party List:</label>
-                                <input id="candidatePartyList" type="text" class="form-control bg-transparent text-white" placeholder="Enter Party List">
+                                <input id="candidatePartyList" v-model="candidate.partyList" type="text" class="form-control bg-transparent text-white" placeholder="Enter Party List">
                             </div>
 
                             <div class="form-group">
                                 <label for="candidacy">Running for:</label>
-                                <select id="candidacy" class="custom-select bg-transparent text-white">
-                                    <option value="" selected>Choose Candidacy</option>
+                                <select id="candidacy" v-model="candidate.candidacy" class="custom-select bg-transparent text-white">
+                                    <option value="" disabled>Choose Candidacy</option>
                                     <option value="President">President</option>
                                     <option value="Vice President">Vice President</option>
                                     <option value="Senator">Senator</option>
@@ -62,9 +62,10 @@
 
                             <div class="form-group">
                                 <label for="candidatePicture">Candidate Picture</label>
+
                                 <div class="custom-file">
-                                    <input id="candidatePicture" type="file" class="custom-file-input" accept="image/*">
-                                    <label for="candidatePicture" class="custom-file-label">Choose Picture</label>
+                                    <input id="candidatePicture" type="file" class="custom-file-input" accept="image/*" @change="captureFile">
+                                    <label for="candidatePicture" class="custom-file-label">{{ fileName }}</label>
                                 </div>
                             </div>
                         </form>
@@ -72,16 +73,16 @@
                 </div>
             </div>
             <div slot="modal-footer" class="w-100 d-flex justify-content-center">
-                <button class="btn btn-light">
+                <button class="btn btn-light" @click.prevent="registerCandidate">
                     Register Candidate
                 </button>
             </div>
         </b-modal>
 
         <b-modal id="regVoterModal" header-border-variant="secondary" footer-border-variant="secondary"
-                                        header-bg-variant="main" header-text-variant="light"
-                                        body-bg-variant="main" body-text-variant="light"
-                                        footer-bg-variant="main" footer-text-variant="light">
+                                    header-bg-variant="main" header-text-variant="light"
+                                    body-bg-variant="main" body-text-variant="light"
+                                    footer-bg-variant="main" footer-text-variant="light">
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-12">
@@ -115,15 +116,19 @@
     export default {
         data() {
             return {
-                candidateName: null,
-                candidatePhotoHash: null,
-                candidateCandidacy: "President",
+                candidate: {
+                    name: null,
+                    partyList: null,
+                    candidacy: '',
+                    imgHash: null,
+                },
 
                 voterName: null,
 
                 contract: null,
                 defaultAccount: null,
 
+                fileName: 'Choose Picture',
                 buffer: null,
             }
         },
@@ -140,29 +145,37 @@
         },
         methods: {
             registerCandidate: async function () {
-                await this.contract.methods.registerCandidate(web3.utils.asciiToHex(this.candidateName),
-                    this.candidatePhotoHash,
-                    this.candidateCandidacy).send({
-                    from: this.defaultAccount,
-                    gas: 1000000
-                })
+                let hash = await ipfs.add(this.buffer);
+                this.candidate.imgHash = hash[0].hash;
+
+                await this.contract.methods
+                        .registerCandidate(
+                            web3.utils.asciiToHex(this.candidate.name),
+                            this.candidate.imgHash,
+                            this.candidate.candidacy)
+                        .send({
+                            from: this.defaultAccount,
+                            gas: 1000000
+                        })
+
             },
             registerVoter: async function () {
-                await this.contract.methods.registerVoter(web3.utils.asciiToHex(this.voterName)).send({
-                    from: this.defaultAccount
-                });
+                await this.contract.methods
+                        .registerVoter(web3.utils.asciiToHex(this.voterName))
+                        .send({
+                            from: this.defaultAccount,
+                            gas: 1000000
+                        });
             },
+
             getCandidate: async function () {
-                let candidate = await this.contract.methods.getCandidateByName(web3.utils.asciiToHex(this
-                        .candidateName),
-                    this.candidateCandidacy).call({
-                    from: this.defaultAccount
-                })
+                let candidate = await this.contract.methods
+                                    .getCandidateByName(web3.utils.asciiToHex('B'), "President")
+                                    .call({from: this.defaultAccount});
 
                 console.log(candidate);
-
                 console.log(web3.utils.hexToUtf8(candidate[0]));
-                console.log(web3.utils.hexToUtf8(candidate[1]));
+                console.log(candidate[1]);
                 console.log(candidate[2].toString());
             },
             getVotes: async function () {
@@ -178,6 +191,8 @@
             captureFile(file) {
                 const reader = new FileReader();
                 if (typeof file !== 'undefined') {
+                    this.fileName = file.target.files[0].name;
+
                     reader.readAsArrayBuffer(file.target.files[0]);
                     reader.onloadend = async () => {
                         this.buffer = await this.convertToBuffer(reader.result);
@@ -185,13 +200,6 @@
                 } else {
                     this.buffer = '';
                 }
-            },
-            uploadPhoto: function () {
-                ipfs.add(this.buffer)
-                    .then(hashedImg => {
-                        this.candidatePhotoHash = hashedImg[0].hash;
-                        console.log(`https://ipfs.io/ipfs/${this.candidatePhotoHash}`);
-                    })
             }
         }
     }
