@@ -1,5 +1,8 @@
 <template>
-        <div id='mainContainer' class="container-fluid">
+    <div id='mainContainer' class="container-fluid">
+        <div id='particles-js'>
+        </div>
+        <div id='main'>
             <div class="row">
                 <div class="col-12">
                     <h1 class="display-4 text-white">Presidents</h1>
@@ -101,11 +104,14 @@
                     </button>
                 </div>
             </div>
-
         </div>
+    </div>
 </template>
 
 <script>
+    require('particles.js')
+    import ParticleSettings from './../assets/particles.json';
+
     const Web3 = require('web3');
     const web3 = new Web3('ws://localhost:8545', null, {});
 
@@ -159,6 +165,11 @@
                 chosenSenators: [],
             }
         },
+        created() {
+            this.$nextTick(() => {
+                this.initParticlesJS()
+            })
+        },
         mounted: async function () {
             const VotingSystem = require('./../../build/contracts/VotingSystem.json');
 
@@ -174,6 +185,9 @@
             // this.loadPresidents();
         },
         methods: {
+            initParticlesJS() {
+                particlesJS('particles-js', ParticleSettings);
+            },
             voteCandidate: async function (candidateName, candidacy) {
                 await this.contract
                           .methods
@@ -213,9 +227,30 @@
 </script>
 
 <style scoped>
+    #particles-js {
+        background: rgba(0, 0, 0, 0.90);
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: 0
+    }
+
+    #main {
+        padding-top: 45px;
+        padding-bottom: 45px;
+
+        padding-left: 2vw;
+        padding-right: 2vw;
+    }
+
     #mainContainer {
-        background: #000000de;
-        padding: 25px;
+        height: 100vh;
+    }
+
+    canvas {
+        display:block;
+        position: fixed;
     }
 
     #votingButton {

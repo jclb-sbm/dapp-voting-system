@@ -119,8 +119,17 @@
 <style scoped>
     #particles-js {
         background: #000000de;
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: 0
     }
 
+    canvas {
+        display:block;
+        position: fixed;
+    }
 
     #voterLoginInput {
         height: 6vh;

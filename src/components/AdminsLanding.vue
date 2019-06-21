@@ -1,6 +1,8 @@
 <template>
     <div id="mainContainer">
-        <div id="buttonsContainer" class="container-fluid">
+        <div id='particles-js'>
+        </div>
+        <div id="main" class="container-fluid">
             <div class="row">
                 <div class="col-12 d-flex justify-content-center">
                     <h1 class="display-2 text-white">Admin Page</h1>
@@ -33,26 +35,28 @@
         </div>
 
         <b-modal id="regCandidateModal" header-border-variant="secondary" footer-border-variant="secondary"
-                                        header-bg-variant="main" header-text-variant="light"
-                                        body-bg-variant="main" body-text-variant="light"
-                                        footer-bg-variant="main" footer-text-variant="light">
-            <div class="container-fluid modal-container" >
+            header-bg-variant="main" header-text-variant="light" body-bg-variant="main" body-text-variant="light"
+            footer-bg-variant="main" footer-text-variant="light">
+            <div class="container-fluid modal-container">
                 <div class="row">
                     <div class="col-12">
                         <form>
                             <div class="form-group">
                                 <label for="candidateName">Candidate Name:</label>
-                                <input id="candidateName" v-model="candidate.name" type="text" class="form-control bg-transparent text-white" placeholder="Enter Candidate Name">
+                                <input id="candidateName" v-model="candidate.name" type="text"
+                                    class="form-control bg-transparent text-white" placeholder="Enter Candidate Name">
                             </div>
 
                             <div class="form-group">
                                 <label for="candidatePartyList">Party List:</label>
-                                <input id="candidatePartyList" v-model="candidate.partyList" type="text" class="form-control bg-transparent text-white" placeholder="Enter Party List">
+                                <input id="candidatePartyList" v-model="candidate.partyList" type="text"
+                                    class="form-control bg-transparent text-white" placeholder="Enter Party List">
                             </div>
 
                             <div class="form-group">
                                 <label for="candidacy">Running for:</label>
-                                <select id="candidacy" v-model="candidate.candidacy" class="custom-select bg-transparent text-white">
+                                <select id="candidacy" v-model="candidate.candidacy"
+                                    class="custom-select bg-transparent text-white">
                                     <option value="" disabled>Choose Candidacy</option>
                                     <option value="President">President</option>
                                     <option value="Vice President">Vice President</option>
@@ -64,7 +68,8 @@
                                 <label for="candidatePicture">Candidate Picture</label>
 
                                 <div class="custom-file">
-                                    <input id="candidatePicture" type="file" class="custom-file-input" accept="image/*" @change="captureFile">
+                                    <input id="candidatePicture" type="file" class="custom-file-input" accept="image/*"
+                                        @change="captureFile">
                                     <label for="candidatePicture" class="custom-file-label">{{ fileName }}</label>
                                 </div>
                             </div>
@@ -80,16 +85,16 @@
         </b-modal>
 
         <b-modal id="regVoterModal" header-border-variant="secondary" footer-border-variant="secondary"
-                                    header-bg-variant="main" header-text-variant="light"
-                                    body-bg-variant="main" body-text-variant="light"
-                                    footer-bg-variant="main" footer-text-variant="light">
+            header-bg-variant="main" header-text-variant="light" body-bg-variant="main" body-text-variant="light"
+            footer-bg-variant="main" footer-text-variant="light">
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-12">
                         <form>
                             <div class="form-group">
                                 <label for="voterName">Voter Name:</label>
-                                <input id="voterName" v-model="voterName" type="text" class="form-control bg-transparent text-white" placeholder="Enter Voter Name">
+                                <input id="voterName" v-model="voterName" type="text"
+                                    class="form-control bg-transparent text-white" placeholder="Enter Voter Name">
                             </div>
                         </form>
                     </div>
@@ -101,11 +106,13 @@
                 </button>
             </div>
         </b-modal>
-
     </div>
 </template>
 
 <script>
+    require('particles.js')
+    import ParticleSettings from './../assets/particles.json';
+
     const Web3 = require('web3');
     const IPFS = require('ipfs-http-client')
 
@@ -132,6 +139,11 @@
                 buffer: null,
             }
         },
+        created() {
+            this.$nextTick(() => {
+                this.initParticlesJS()
+            })
+        },
         mounted: async function () {
             const VotingSystem = require('./../../build/contracts/VotingSystem.json');
 
@@ -144,34 +156,39 @@
             this.contract = new web3.eth.Contract(contractABI, contractAddress);
         },
         methods: {
+            initParticlesJS() {
+                particlesJS('particles-js', ParticleSettings);
+            },
             registerCandidate: async function () {
                 let hash = await ipfs.add(this.buffer);
                 this.candidate.imgHash = hash[0].hash;
 
                 await this.contract.methods
-                        .registerCandidate(
-                            web3.utils.asciiToHex(this.candidate.name),
-                            this.candidate.imgHash,
-                            this.candidate.candidacy)
-                        .send({
-                            from: this.defaultAccount,
-                            gas: 1000000
-                        })
+                    .registerCandidate(
+                        web3.utils.asciiToHex(this.candidate.name),
+                        this.candidate.imgHash,
+                        this.candidate.candidacy)
+                    .send({
+                        from: this.defaultAccount,
+                        gas: 1000000
+                    })
 
             },
             registerVoter: async function () {
                 await this.contract.methods
-                        .registerVoter(web3.utils.asciiToHex(this.voterName))
-                        .send({
-                            from: this.defaultAccount,
-                            gas: 1000000
-                        });
+                    .registerVoter(web3.utils.asciiToHex(this.voterName))
+                    .send({
+                        from: this.defaultAccount,
+                        gas: 1000000
+                    });
             },
 
             getCandidate: async function () {
                 let candidate = await this.contract.methods
-                                    .getCandidateByName(web3.utils.asciiToHex('B'), "President")
-                                    .call({from: this.defaultAccount});
+                    .getCandidateByName(web3.utils.asciiToHex('B'), "President")
+                    .call({
+                        from: this.defaultAccount
+                    });
 
                 console.log(candidate);
                 console.log(web3.utils.hexToUtf8(candidate[0]));
@@ -208,8 +225,13 @@
 <style scoped>
     #mainContainer {
         background: #000000de;
-        padding-top: 30vh;
+        z-index: -11;
         height: 100vh;
+    }
+
+    #main {
+        position: absolute;
+        padding-top: 30vh;
     }
 
     .form-control:focus {
@@ -221,16 +243,31 @@
         color: rgba(255, 255, 255, 0.75) !important;
     }
 
-    input:-moz-placeholder { /* Firefox 18- */
-        color:  rgba(255, 255, 255, 0.75) !important;
+    input:-moz-placeholder {
+        /* Firefox 18- */
+        color: rgba(255, 255, 255, 0.75) !important;
     }
 
-    input::-moz-placeholder {  /* Firefox 19+ */
-        color:  rgba(255, 255, 255, 0.75) !important;
+    input::-moz-placeholder {
+        /* Firefox 19+ */
+        color: rgba(255, 255, 255, 0.75) !important;
     }
 
     input:-ms-input-placeholder {
-        color:  rgba(255, 255, 255, 0.75) !important;
+        color: rgba(255, 255, 255, 0.75) !important;
+    }
+
+    canvas {
+        display:block;
+        position: fixed;
+    }
+
+    #particles-js {
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: 0
     }
 </style>
 
