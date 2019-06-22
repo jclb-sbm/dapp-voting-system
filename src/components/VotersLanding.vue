@@ -70,7 +70,7 @@
             const contractAddress = VotingSystem.networks[5777].address;
 
             let accounts = await web3.eth.getAccounts();
-            this.defaultAccount = accounts[0];
+            this.defaultAccount = accounts[1];
 
             this.contract = new web3.eth.Contract(contractABI, contractAddress);
 

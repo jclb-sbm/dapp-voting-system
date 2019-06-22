@@ -6,14 +6,22 @@ contract VotingSystem {
         bytes32 name;
         // add more information
 
-        bool valid;
+        bool validity;
     }
 
     struct Candidate {
         bytes32 name;
-        string imgHash; // TODO: change to struct {bytes32 hash; uint8 hash_function; uint8 size}
-
+        bytes32 partyList;
         // add more information
+
+        string imgHash;
+        // Improvement:
+        //
+        // imgHash {
+        //      bytes32 hash
+        //      uint8 hash_function
+        //      uint8 size
+        // }
 
         uint votes;
     }
@@ -23,37 +31,61 @@ contract VotingSystem {
         uint256 end;
     }
 
-    TimeFrame candidateRegistration = TimeFrame(0, 0);
-    TimeFrame voterRegistration = TimeFrame(0, 0);
-    TimeFrame votingTimeFrame = TimeFrame(0, 0);
+    TimeFrame registrationPhase;
+    TimeFrame votingPhase;
 
     Candidate[] presCandidates;
     Candidate[] vicePresCandidates;
+    Candidate[] senCandidates;
 
     Voter[] voters;
 
-    modifier onlyOnCandidateRegistrationTimeFrame() {
-        require(
-            candidateRegistration.start <= now &&
-            now <= candidateRegistration.end,
-            "Candidates Registration Prohibited"
-        );
+    address electionAdmin;
+
+    modifier onlyElectionAdmin() {
+        require(electionAdmin == msg.sender, "You don't have administration rights");
         _;
     }
 
-    modifier onlyOnVoterRegistrationTimeFrame() {
+    modifier onlyUnregisteredVoter(bytes32 _voterName) {
+        for (uint256 i = 0; i < voters.length; i++) {
+            require(voters[i].name != _voterName, 'You are already registered as a voter');
+        }
+        _;
+    }
+
+    modifier onlyUnregisteredCandidate(bytes32 _voterName, string memory _candidacy) {
+        if (strEquals(_candidacy, 'President')) {
+            for (uint256 i = 0; i < presCandidates.length; i++) {
+                require(presCandidates[i].name != _voterName, 'You are already registered as a candidate');
+            }
+        }
+        else if (strEquals(_candidacy, 'Vice President')) {
+            for (uint256 i = 0; i < vicePresCandidates.length; i++) {
+                require(vicePresCandidates[i].name != _voterName, 'You are already registered as a candidate');
+            }
+        }
+        else if (strEquals(_candidacy, 'Senator')) {
+            for (uint256 i = 0; i < senCandidates.length; i++) {
+                require(senCandidates[i].name != _voterName, 'You are already registered as a candidate');
+            }
+        }
+        _;
+    }
+
+    modifier onlyOnRegistrationTimeFrame() {
         require(
-            voterRegistration.start <= now &&
-            now <= voterRegistration.end,
-            "Voters Registration Prohibited"
+            registrationPhase.start <= now &&
+            now <= registrationPhase.end,
+            "Registration Prohibited"
         );
         _;
     }
 
     modifier onlyOnVotingTimeFrame() {
         require(
-            votingTimeFrame.start <= now &&
-            now <= votingTimeFrame.end,
+            votingPhase.start <= now &&
+            now <= votingPhase.end,
             "Voting Prohibited"
         );
         _;
@@ -69,21 +101,38 @@ contract VotingSystem {
         _;
     }
 
-    function registerCandidate(bytes32 _name, string memory _imgHash, string memory _candidacy)
+    constructor(uint256 daysTillRegistrationStart, uint256 daysTillRegistrationEnd,
+                uint256 daysTillVotingStart, uint256 dayTillsVotingEnd) public {
+
+        uint256 registrationStart = daysTillRegistrationStart * 1 days;
+        uint256 registrationEnd = daysTillRegistrationEnd * 1 days;
+
+        uint votingStart = daysTillVotingStart * 1 days;
+        uint votingEnd = dayTillsVotingEnd * 1 days;
+
+        registrationPhase = TimeFrame(now + registrationStart, now + registrationEnd);
+        votingPhase = TimeFrame(now + votingStart, now + votingEnd);
+        electionAdmin = msg.sender;
+    }
+
+    function registerCandidate(bytes32 _name, bytes32 _partyList, string memory _imgHash, string memory _candidacy)
         public
         // onlyOnCandidateRegistrationTimeFrame
     {
         if (strEquals(_candidacy, 'President')) {
-            presCandidates.push(Candidate(_name, _imgHash, 0));
+            presCandidates.push(Candidate(_name, _partyList, _imgHash, 0));
         }
         else if (strEquals(_candidacy, 'Vice President')) {
-            vicePresCandidates.push(Candidate(_name, _imgHash, 0));
+            vicePresCandidates.push(Candidate(_name, _partyList, _imgHash, 0));
+        }
+        else if (strEquals(_candidacy, 'Senator')) {
+            senCandidates.push(Candidate(_name, _partyList, _imgHash, 0));
         }
     }
 
     function registerVoter(bytes32 _name)
         public
-        // onlyOnVoterRegistrationTimeFrame
+        // onlyOnRegistrationTimeFrame
     {
         voters.push(Voter(_name, true));
     }
@@ -104,6 +153,14 @@ contract VotingSystem {
         }
     }
 
+    function voteSenator(bytes32 _candidateName) private {
+        for (uint256 i = 0; i < senCandidates.length; i++) {
+            if (senCandidates[i].name == _candidateName) {
+                senCandidates[i].votes += 1;
+            }
+        }
+    }
+
     function voteCandidate(bytes32 _candidateName, string memory _candidacy, bytes32 _voterName)
         public
         onlyValidVoter(_voterName)
@@ -116,18 +173,22 @@ contract VotingSystem {
         else if (strEquals(_candidacy, 'Vice President')) {
             voteVicePresident(_candidateName);
         }
+        else if (strEquals(_candidacy, 'Vice President')) {
+            voteSenator(_candidateName);
+        }
     }
 
     function getCandidateByIndex(uint256 _index, string memory _candidacy)
         public
         view
-        returns (bytes32, string memory, uint256)
+        returns (bytes32, bytes32, string memory, uint256)
     {
         if (strEquals(_candidacy, 'President'))
         {
             return
             (
                 presCandidates[_index].name,
+                presCandidates[_index].partyList,
                 presCandidates[_index].imgHash,
                 presCandidates[_index].votes
             );
@@ -137,8 +198,19 @@ contract VotingSystem {
             return
             (
                 vicePresCandidates[_index].name,
+                vicePresCandidates[_index].partyList,
                 vicePresCandidates[_index].imgHash,
                 vicePresCandidates[_index].votes
+            );
+        }
+        else if (strEquals(_candidacy, 'Vice President'))
+        {
+            return
+            (
+                senCandidates[_index].name,
+                senCandidates[_index].partyList,
+                senCandidates[_index].imgHash,
+                senCandidates[_index].votes
             );
         }
     }
@@ -146,7 +218,7 @@ contract VotingSystem {
     function getCandidateByName(bytes32 _name, string memory _candidacy)
         public
         view
-        returns (bytes32, string memory, uint256)
+        returns (bytes32, bytes32, string memory, uint256)
     {
         if (strEquals(_candidacy, 'President')) {
             return getCandidateFromList(_name, presCandidates);
@@ -154,10 +226,10 @@ contract VotingSystem {
         else if (strEquals(_candidacy, 'Vice President')) {
             return getCandidateFromList(_name, vicePresCandidates);
         }
-        else {
-            return ("No", "Candidate", 1);
+        else if (strEquals(_candidacy, 'Senator'))
+        {
+            return getCandidateFromList(_name, senCandidates);
         }
-
     }
 
     function getPresCount() public view returns (uint256) {
@@ -169,13 +241,16 @@ contract VotingSystem {
         return vicePresCandidates.length;
     }
 
+    function getSenCount() public view returns (uint256) {
+        return senCandidates.length;
+    }
 
     function getVotes(bytes32 _name, string memory _candidacy)
         public
         view
         returns (uint256)
     {
-        (, , uint256 votes) = getCandidateByName(_name, _candidacy);
+        (, , , uint256 votes) = getCandidateByName(_name, _candidacy);
         return votes;
     }
 
@@ -188,7 +263,7 @@ contract VotingSystem {
         return
         (
             voters[_index].name,
-            voters[_index].valid
+            voters[_index].validity
         );
 
     }
@@ -204,7 +279,7 @@ contract VotingSystem {
                 return
                 (
                     voters[i].name,
-                    voters[i].valid
+                    voters[i].validity
                 );
 
             }
@@ -219,29 +294,33 @@ contract VotingSystem {
         return voters.length;
     }
 
+    function invalidateVoter(bytes32 _voterName) public {
+        for (uint256 i = 0; i < voters.length; i++) {
+            if (voters[i].name == _voterName) {
+                voters[i].validity = false;
+            }
+        }
+    }
+
     function getCandidateFromList(bytes32 _name, Candidate[] memory _candidateList)
         private
         pure
-        returns (bytes32, string memory, uint256)
+        returns (bytes32, bytes32, string memory, uint256)
     {
         for (uint256 i = 0; i < _candidateList.length; i++) {
             if (_candidateList[i].name == _name) {
                 return
                 (
                     _candidateList[i].name,
+                    _candidateList[i].partyList,
                     _candidateList[i].imgHash,
                     _candidateList[i].votes
                 );
             }
         }
-        return ("Not", 'Found', 1);
     }
 
     function strEquals(string memory a, string memory b) private pure returns (bool) {
         return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
     }
-
-    //TODO
-    // Set Voter Validity (after voting must be invalid)
-    // Check If Voter is Registerd
 }
