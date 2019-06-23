@@ -6,24 +6,20 @@
             <div class="row">
                 <div class="col-12">
                     <h1 class="display-4 text-white">Presidents</h1>
-                    <div class="card-deck d-flex justify-content-center">
+                    <div class="card-deck d-flex justify-content-left">
                         <div v-for="candidate in presCandidates" :key="candidate[0]">
                             <div class="card border-light text-white bg-transparent mb-3" style="width: 18rem;">
                                 <img class="card-img-top" :src="candidate.imgHash" alt="Card image cap">
+
                                 <div class="card-body">
-
                                     <h5 class="card-title">{{ candidate.name }}</h5>
-
                                     <div class="card-text">
-                                        Party List
+                                        <i>{{ candidate.partyList }}</i>
                                     </div>
                                 </div>
+
                                 <div class="card-footer">
-                                    <div class="custom-control custom-radio">
-                                        <input type="radio" :name="candidate.name" :value="candidate.name" v-model="chosenPres" class="custom-control-input"
-                                        :id="candidate.name">
-                                        <label class="custom-control-label" :for="candidate.name">Vote as President</label>
-                                    </div>
+                                    <h2>{{ candidate.votes }}</h2>
                                 </div>
                             </div>
                         </div>
@@ -34,7 +30,7 @@
             <div class="row">
                 <div class="col-12">
                     <h1 class="display-4 text-white">Vice Presidents</h1>
-                    <div class="card-deck d-flex justify-content-center">
+                    <div class="card-deck d-flex justify-content-left">
                         <div v-for="candidate in vicePresCandidates" :key="candidate[0]">
                             <div class="card border-light text-white bg-transparent mb-3" style="width: 18rem;">
                                 <img class="card-img-top" :src="candidate.imgHash" alt="Card image cap">
@@ -43,15 +39,11 @@
                                     <h5 class="card-title">{{ candidate.name }}</h5>
 
                                     <div class="card-text">
-                                        Party List
+                                        <i>{{ candidate.partyList }}</i>
                                     </div>
                                 </div>
                                 <div class="card-footer">
-                                    <div class="custom-control custom-radio">
-                                        <input type="radio" :name="candidate.name" :value="candidate.name" v-model="chosenVicePres" class="custom-control-input"
-                                        :id="candidate.name">
-                                        <label class="custom-control-label" :for="candidate.name">Vote as Vice President</label>
-                                    </div>
+                                    <h2>{{ candidate.votes }}</h2>
                                 </div>
                             </div>
                         </div>
@@ -62,46 +54,27 @@
             <div class="row">
                 <div class="col-12">
                     <h1 class="display-4 text-white">Senators</h1>
-                    <div class="card-deck d-flex justify-content-center">
+                    <div class="card-deck d-flex justify-content-left">
                         <div v-for="candidate in senCandidates" :key="candidate[0]">
 
                             <div class="card border-light text-white bg-transparent mb-3" style="width: 15rem;">
-
-                                <!-- <div class="card-header">
-                                    <h4>{{ candidate.name }}</h4>
-                                </div> -->
-
                                 <img class="card-img-top" :src="candidate.imgHash" alt="Card image cap">
                                 <div class="card-body">
-                                    <!-- <h5 class="card-title">Party list</h5> -->
-                                    <h4 class="card-title">{{ candidate.name }}</h4>
+                                    <h2 class="card-title">{{ candidate.name }}</h2>
                                     <div class="card-text">
-                                        Party List
+                                        <i>{{ candidate.partyList }}</i>
                                     </div>
 
 
                                 </div>
 
                                 <div class="card-footer">
-                                    <div class="custom-control custom-checkbox">
-                                        <input class="custom-control-input" type="checkbox" :id="candidate.name" :value="candidate.name" v-model="chosenSenators"/>
-                                        <label class="custom-control-label" :for="candidate.name ">
-                                            Vote as Senator
-                                        </label>
-                                    </div>
+                                    <h2>{{ candidate.votes }}</h2>
                                 </div>
                             </div>
 
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-4 offset-4 d-flex justify-content-center">
-                    <button id="votingButton" class="btn btn-lg btn-outline-light btn-block" @click="finishVoting">
-                        Finish Voting
-                    </button>
                 </div>
             </div>
         </div>
@@ -112,22 +85,9 @@
     require('particles.js')
     import ParticleSettings from './../assets/particles.json';
 
-    const Web3 = require('web3');
-    const web3 = new Web3('ws://localhost:8545', null, {});
-
     export default {
         data() {
             return {
-                showDismissibleAlert: false,
-                invalidLoginReason: null,
-
-                voterLoggedIn: false,
-                voterName: null,
-                voter: null,
-                candidateName: null,
-                contract: null,
-                defaultAccount: null,
-
                 presCandidates: [{name: 'President A', partyList: 'Party List A', imgHash: 'http://127.0.0.1:8080/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 49},
                                  {name: 'President B', partyList: 'Party List B', imgHash: 'http://127.0.0.1:8080/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 50}],
 
@@ -159,10 +119,6 @@
                                 {name: 'Senator X', partyList: 'Party List B', imgHash: 'http://127.0.0.1:8080/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 240},
                                 {name: 'Senator Y', partyList: 'Party List B', imgHash: 'http://127.0.0.1:8080/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 250},
                                 {name: 'Senator Z', partyList: 'Party List B', imgHash: 'http://127.0.0.1:8080/ipfs/Qmf4JxXH1cNSwD9yYLzauc7mH8a3fbXip6Q7r1pFjCz9mc', votes: 260}],
-
-                chosenPres: null,
-                chosenVicePres: null,
-                chosenSenators: [],
             }
         },
         created() {
@@ -170,57 +126,9 @@
                 this.initParticlesJS()
             })
         },
-        mounted: async function () {
-            const VotingSystem = require('./../../build/contracts/VotingSystem.json');
-
-            const contractABI = VotingSystem.abi;
-            const contractAddress = VotingSystem.networks[5777].address;
-
-            let accounts = await web3.eth.getAccounts();
-            this.defaultAccount = accounts[1];
-
-            this.contract = new web3.eth.Contract(contractABI, contractAddress);
-            this.voterName = this.$route.params.id;
-
-            // this.loadPresidents();
-        },
         methods: {
             initParticlesJS() {
                 particlesJS('particles-js', ParticleSettings);
-            },
-            voteCandidate: async function (candidateName, candidacy) {
-                await this.contract
-                          .methods
-                          .voteCandidate(web3.utils.asciiToHex(candidateName), candidacy, web3.utils.asciiToHex(this.voterName)).send({
-                    from: this.defaultAccount
-                });
-            },
-            loadPresidents: async function () {
-                let presCount = await this.contract.methods.getPresCount().call();
-
-                this.presCandidates = [];
-                for (let i = 0; i < presCount; i++) {
-
-                    let candidateTuple = await this.contract.methods.getCandidateByIndex(i, 'President').call();
-                    let candidate = {
-                        name: web3.utils.hexToUtf8(candidateTuple[0]),
-                        imgHash: `http://127.0.0.1:8080/ipfs/${candidateTuple[1]}`,
-                        votes: candidateTuple[2]
-                    }
-                    this.presCandidates.push(candidate);
-                    console.log(this.presCandidates);
-
-                }
-            },
-            finishVoting: async function () {
-                this.voteCandidate(this.chosenPres, 'President');
-
-                for (let i=0; i<this.chosenSenators.length; i++) {
-                    this.voteCandidate(this.chosenSenators[i], 'President');
-                }
-            },
-            logoutVoter: function () {
-                this.voter = null;
             },
         }
     }
@@ -251,15 +159,5 @@
     canvas {
         display:block;
         position: fixed;
-    }
-
-    #votingButton {
-        margin-top: 30px;
-        margin-bottom: 20px;
-    }
-
-    .card {
-        margin-top: 20px;
-        margin-bottom: 10px;
     }
 </style>

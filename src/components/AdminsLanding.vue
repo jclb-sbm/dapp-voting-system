@@ -10,12 +10,12 @@
             </div>
             <div class="row">
                 <div class="col-3 offset-3">
-                    <button class="btn btn-lg btn-outline-light btn-block mt-4">
+                    <button class="btn btn-lg btn-outline-light btn-block mt-4" v-b-modal.setupElectionModal>
                         Setup Election
                     </button>
                 </div>
                 <div class="col-3">
-                    <button class="btn btn-lg btn-outline-light btn-block mt-4">
+                    <button class="btn btn-lg btn-outline-light btn-block mt-4" @click="publishResults">
                         Publish Results
                     </button>
                 </div>
@@ -33,6 +33,27 @@
                 </div>
             </div>
         </div>
+
+        <b-modal id="setupElectionModal" header-border-variant="secondary" footer-border-variant="secondary"
+            header-bg-variant="main" header-text-variant="light" body-bg-variant="main" body-text-variant="light"
+            footer-bg-variant="main" footer-text-variant="light">
+            <div class="container-fluid modal-container">
+                <div class="row">
+                    <div class="col-12">
+                        <form>
+                            <div class="form-group">
+                                <input type="date" />
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div slot="modal-footer" class="w-100 d-flex justify-content-center">
+                <button class="btn btn-light" @click.prevent="setupElection">
+                    Setup Election
+                </button>
+            </div>
+        </b-modal>
 
         <b-modal id="regCandidateModal" header-border-variant="secondary" footer-border-variant="secondary"
             header-bg-variant="main" header-text-variant="light" body-bg-variant="main" body-text-variant="light"
@@ -112,6 +133,7 @@
 <script>
     require('particles.js')
     import ParticleSettings from './../assets/particles.json';
+    import router from './../router.js';
 
     const Web3 = require('web3');
     const IPFS = require('ipfs-http-client')
@@ -158,6 +180,12 @@
         methods: {
             initParticlesJS() {
                 particlesJS('particles-js', ParticleSettings);
+            },
+            setupElection: async function () {
+                // deploy contract here
+            },
+            publishResults: async function () {
+                router.push({name: 'results'});
             },
             registerCandidate: async function () {
                 let hash = await ipfs.add(this.buffer);

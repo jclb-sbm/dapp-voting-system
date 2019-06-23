@@ -25,11 +25,11 @@ let router  = new Router({
             }
         },
         {
-            path: '/admin/:id',
-            name: 'admin',
+            path: '/results',
+            name: 'results',
             component: resolve => {
-                require.ensure(['@/components/Admin.vue'], () => {
-                    resolve(require('@/components/Admin.vue'));
+                require.ensure(['@/components/Results.vue'], () => {
+                    resolve(require('@/components/Results.vue'));
                 });
             }
         },
