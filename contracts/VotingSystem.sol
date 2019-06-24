@@ -23,7 +23,7 @@ contract VotingSystem {
         //      uint8 size
         // }
 
-        uint votes;
+        uint24 votes;
     }
 
     struct TimeFrame {
@@ -48,7 +48,7 @@ contract VotingSystem {
     }
 
     modifier onlyUnregisteredVoter(bytes32 _voterName) {
-        for (uint256 i = 0; i < voters.length; i++) {
+        for (uint24 i = 0; i < voters.length; i++) {
             require(voters[i].name != _voterName, 'You are already registered as a voter');
         }
         _;
@@ -56,17 +56,17 @@ contract VotingSystem {
 
     modifier onlyUnregisteredCandidate(bytes32 _voterName, string memory _candidacy) {
         if (strEquals(_candidacy, 'President')) {
-            for (uint256 i = 0; i < presCandidates.length; i++) {
+            for (uint8 i = 0; i < presCandidates.length; i++) {
                 require(presCandidates[i].name != _voterName, 'You are already registered as a candidate');
             }
         }
         else if (strEquals(_candidacy, 'Vice President')) {
-            for (uint256 i = 0; i < vicePresCandidates.length; i++) {
+            for (uint8 i = 0; i < vicePresCandidates.length; i++) {
                 require(vicePresCandidates[i].name != _voterName, 'You are already registered as a candidate');
             }
         }
         else if (strEquals(_candidacy, 'Senator')) {
-            for (uint256 i = 0; i < senCandidates.length; i++) {
+            for (uint8 i = 0; i < senCandidates.length; i++) {
                 require(senCandidates[i].name != _voterName, 'You are already registered as a candidate');
             }
         }
@@ -101,14 +101,14 @@ contract VotingSystem {
         _;
     }
 
-    constructor(uint256 daysTillRegistrationStart, uint256 daysTillRegistrationEnd,
-                uint256 daysTillVotingStart, uint256 dayTillsVotingEnd) public {
+    constructor(uint8 daysTillRegistrationStart, uint8 daysTillRegistrationEnd,
+                uint8 daysTillVotingStart, uint8 dayTillsVotingEnd) public {
 
         uint256 registrationStart = daysTillRegistrationStart * 1 days;
         uint256 registrationEnd = daysTillRegistrationEnd * 1 days;
 
-        uint votingStart = daysTillVotingStart * 1 days;
-        uint votingEnd = dayTillsVotingEnd * 1 days;
+        uint256 votingStart = daysTillVotingStart * 1 days;
+        uint256 votingEnd = dayTillsVotingEnd * 1 days;
 
         registrationPhase = TimeFrame(now + registrationStart, now + registrationEnd);
         votingPhase = TimeFrame(now + votingStart, now + votingEnd);
@@ -138,7 +138,7 @@ contract VotingSystem {
     }
 
     function votePresident(bytes32 _candidateName) private  {
-        for (uint256 i = 0; i < presCandidates.length; i++) {
+        for (uint8 i = 0; i < presCandidates.length; i++) {
             if (presCandidates[i].name == _candidateName) {
                 presCandidates[i].votes += 1;
             }
@@ -146,7 +146,7 @@ contract VotingSystem {
     }
 
     function voteVicePresident(bytes32 _candidateName) private {
-        for (uint256 i = 0; i < vicePresCandidates.length; i++) {
+        for (uint8 i = 0; i < vicePresCandidates.length; i++) {
             if (vicePresCandidates[i].name == _candidateName) {
                 vicePresCandidates[i].votes += 1;
             }
@@ -154,7 +154,7 @@ contract VotingSystem {
     }
 
     function voteSenator(bytes32 _candidateName) private {
-        for (uint256 i = 0; i < senCandidates.length; i++) {
+        for (uint8 i = 0; i < senCandidates.length; i++) {
             if (senCandidates[i].name == _candidateName) {
                 senCandidates[i].votes += 1;
             }
@@ -178,10 +178,10 @@ contract VotingSystem {
         }
     }
 
-    function getCandidateByIndex(uint256 _index, string memory _candidacy)
+    function getCandidateByIndex(uint8 _index, string memory _candidacy)
         public
         view
-        returns (bytes32, bytes32, string memory, uint256)
+        returns (bytes32, bytes32, string memory, uint24)
     {
         if (strEquals(_candidacy, 'President'))
         {
@@ -218,7 +218,7 @@ contract VotingSystem {
     function getCandidateByName(bytes32 _name, string memory _candidacy)
         public
         view
-        returns (bytes32, bytes32, string memory, uint256)
+        returns (bytes32, bytes32, string memory, uint24)
     {
         if (strEquals(_candidacy, 'President')) {
             return getCandidateFromList(_name, presCandidates);
@@ -232,17 +232,17 @@ contract VotingSystem {
         }
     }
 
-    function getPresCount() public view returns (uint256) {
-        return presCandidates.length;
+    function getPresCount() public view returns (uint8) {
+        return uint8(presCandidates.length);
     }
 
-    function getVicePresCount() public view returns (uint256)
+    function getVicePresCount() public view returns (uint8)
     {
-        return vicePresCandidates.length;
+        return uint8(vicePresCandidates.length);
     }
 
-    function getSenCount() public view returns (uint256) {
-        return senCandidates.length;
+    function getSenCount() public view returns (uint8) {
+        return uint8(senCandidates.length);
     }
 
     function getVotes(bytes32 _name, string memory _candidacy)
@@ -250,11 +250,11 @@ contract VotingSystem {
         view
         returns (uint256)
     {
-        (, , , uint256 votes) = getCandidateByName(_name, _candidacy);
+        (, , , uint24 votes) = getCandidateByName(_name, _candidacy);
         return votes;
     }
 
-    function getVoterByIndex(uint256 _index)
+    function getVoterByIndex(uint24 _index)
         public
         view
         returns (bytes32, bool)
@@ -273,7 +273,7 @@ contract VotingSystem {
         view
         returns (bytes32, bool)
     {
-        for (uint256 i = 0; i < voters.length; i++) {
+        for (uint24 i = 0; i < voters.length; i++) {
             if (voters[i].name == _name) {
 
                 return
@@ -289,13 +289,13 @@ contract VotingSystem {
     function getVoterCount()
         public
         view
-        returns (uint256)
+        returns (uint24)
     {
-        return voters.length;
+        return uint24(voters.length);
     }
 
     function invalidateVoter(bytes32 _voterName) public {
-        for (uint256 i = 0; i < voters.length; i++) {
+        for (uint24 i = 0; i < voters.length; i++) {
             if (voters[i].name == _voterName) {
                 voters[i].validity = false;
             }
@@ -305,7 +305,7 @@ contract VotingSystem {
     function getCandidateFromList(bytes32 _name, Candidate[] memory _candidateList)
         private
         pure
-        returns (bytes32, bytes32, string memory, uint256)
+        returns (bytes32, bytes32, string memory, uint24)
     {
         for (uint256 i = 0; i < _candidateList.length; i++) {
             if (_candidateList[i].name == _name) {
