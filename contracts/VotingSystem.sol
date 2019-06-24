@@ -192,7 +192,7 @@ contract VotingSystem {
         else if (strEquals(_candidacy, 'Vice President')) {
             voteVicePresident(_candidateName);
         }
-        else if (strEquals(_candidacy, 'Vice President')) {
+        else if (strEquals(_candidacy, 'Senator')) {
             voteSenator(_candidateName);
         }
     }
@@ -222,7 +222,7 @@ contract VotingSystem {
                 vicePresCandidates[_index].votes
             );
         }
-        else if (strEquals(_candidacy, 'Vice President'))
+        else if (strEquals(_candidacy, 'Senator'))
         {
             return
             (

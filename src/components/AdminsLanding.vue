@@ -284,6 +284,7 @@
                 await this.contract.methods
                     .registerCandidate(
                         web3.utils.asciiToHex(this.candidate.name),
+                        web3.utils.asciiToHex(this.candidate.partyList),
                         this.candidate.imgHash,
                         this.candidate.candidacy)
                     .send({
