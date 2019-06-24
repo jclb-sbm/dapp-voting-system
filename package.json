@@ -7,6 +7,7 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "migrate": "truffle migrate",
+    "compile": "truffle compile",
     "test": "truffle test",
     "coverage": "solidity-coverage",
     "server": "testrpc-sc --port 8555 -l 0xfffffffffff -g 0x01"
@@ -17,10 +18,13 @@
     "core-js": "^2.6.5",
     "ipfs": "^0.36.4",
     "jquery": "^3.4.1",
+    "moment": "^2.24.0",
     "particles.js": "^2.0.0",
+    "pc-bootstrap4-datetimepicker": "^4.17.50",
     "solidity-coverage": "^0.5.11",
     "truffle": "^5.0.22",
     "vue": "^2.6.10",
+    "vue-bootstrap-datetimepicker": "^5.0.1",
     "vue-router": "^3.0.6",
     "web3": "^1.0.0-beta.55"
   },

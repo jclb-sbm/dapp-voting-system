@@ -38,16 +38,52 @@
             header-bg-variant="main" header-text-variant="light" body-bg-variant="main" body-text-variant="light"
             footer-bg-variant="main" footer-text-variant="light">
             <div class="container-fluid modal-container">
+
                 <div class="row">
                     <div class="col-12">
-                        <form>
-                            <div class="form-group">
-                                <input type="date" />
-                            </div>
-                        </form>
+                        <h3>Registration Phase</h3>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-1 offset-1 d-flex justify-content-center timeframe-field">
+                        <p>Start:</p>
+                    </div>
+                    <div class="col-4">
+                        <date-picker v-model="regStartInput" :config="options" @change="setDate">
+                        </date-picker>
+                    </div>
+                    <div class="col-1 d-flex justify-content-center timeframe-field">
+                        <p>Finish:</p>
+                    </div>
+                    <div class="col-4">
+                        <date-picker v-model="regFinInput" :config="options">
+                        </date-picker>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <h3>Voting Phase</h3>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-1 offset-1 d-flex justify-content-center timeframe-field">
+                        <p>Start:</p>
+                    </div>
+                    <div class="col-4">
+                        <date-picker v-model="voteStartInput" :config="options">
+                        </date-picker>
+                    </div>
+                    <div class="col-1 d-flex justify-content-center timeframe-field">
+                        <p>Finish:</p>
+                    </div>
+                    <div class="col-4">
+                        <date-picker v-model="voteFinInput" :config="options">
+                        </date-picker>
                     </div>
                 </div>
             </div>
+
             <div slot="modal-footer" class="w-100 d-flex justify-content-center">
                 <button class="btn btn-light" @click.prevent="setupElection">
                     Setup Election
@@ -137,6 +173,7 @@
 
     const Web3 = require('web3');
     const IPFS = require('ipfs-http-client')
+    const moment = require('moment');
 
     const Buffer = IPFS.Buffer;
     const web3 = new Web3('ws://localhost:8545', null, {});
@@ -145,6 +182,21 @@
     export default {
         data() {
             return {
+                options: {
+                    format: 'YYYY-MM-DD',
+                    useCurrent: false,
+                },
+
+                regStartInput: moment().format('YYYY-MM-DD'),
+                regFinInput: moment().format('YYYY-MM-DD'),
+                voteStartInput: moment().format('YYYY-MM-DD'),
+                voteFinInput: moment().format('YYYY-MM-DD'),
+
+                regStart: 0,
+                regFin: 0,
+                voteStart: 0,
+                voteFin: 0,
+
                 candidate: {
                     name: null,
                     partyList: null,
@@ -177,12 +229,42 @@
 
             this.contract = new web3.eth.Contract(contractABI, contractAddress);
         },
+        watch: {
+            regStartInput: function (newDate, oldDate) {
+                this.regStart = this.initDate(newDate);
+            },
+            regFinInput: function (newDate, oldDate) {
+                this.regFin = this.initDate(newDate);
+            },
+            voteStartInput: function (newDate, oldDate) {
+                this.voteStart = this.initDate(newDate);
+            },
+            voteFinInput: function (newDate, oldDate) {
+                this.voteFin = this.initDate(newDate);
+            },
+        },
         methods: {
             initParticlesJS() {
                 particlesJS('particles-js', ParticleSettings);
             },
-            setupElection: async function () {
-                // deploy contract here
+            initDate: function (date) {
+                // Format must be: YYYY-MM-DD
+                let year = date.slice(0, 4);
+                let month = date.slice(5, 7);
+                let day = date.slice(8, 10);
+
+                return moment([year, month - 1, day]);
+            },
+            setDate: function () {
+                console.log('setDate');
+            },
+            setupElection: function () {
+                let now = moment().startOf('day');
+
+                let daysTillRegStart = this.regStart.diff(now, 'days');
+                let daysTillRegFin = this.regFin.diff(now, 'days');
+                let daysTillVoteStart = this.voteStart.diff(now, 'days');
+                let daysTillVoteFin = this.voteFin.diff(now, 'days');
             },
             publishResults: async function () {
                 router.push({name: 'results'});
@@ -296,6 +378,10 @@
         position: fixed;
         top: 0;
         left: 0
+    }
+
+    .timeframe-field {
+        padding-top: 5px;
     }
 </style>
 
