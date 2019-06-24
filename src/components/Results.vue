@@ -126,6 +126,11 @@
                 this.initParticlesJS()
             })
         },
+        mounted() {
+            this.presCandidates.sort((a, b) => a.votes < b.votes);
+            this.vicePresCandidates.sort((a, b) => a.votes < b.votes);
+            this.senCandidates.sort((a, b) => a.votes < b.votes);
+        },
         methods: {
             initParticlesJS() {
                 particlesJS('particles-js', ParticleSettings);
