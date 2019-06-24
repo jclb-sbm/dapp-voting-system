@@ -265,6 +265,14 @@
                 let daysTillRegFin = this.regFin.diff(now, 'days');
                 let daysTillVoteStart = this.voteStart.diff(now, 'days');
                 let daysTillVoteFin = this.voteFin.diff(now, 'days');
+
+                this.contract.methods
+                    .resetElection(daysTillRegStart, daysTillRegFin,
+                                   daysTillVoteStart, daysTillVoteFin)
+                    .send({
+                        from: this.defaultAccount,
+                        gas: 1000000
+                    });
             },
             publishResults: async function () {
                 router.push({name: 'results'});

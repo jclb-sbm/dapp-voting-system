@@ -115,6 +115,25 @@ contract VotingSystem {
         electionAdmin = msg.sender;
     }
 
+    function resetElection(uint8 daysTillRegistrationStart, uint8 daysTillRegistrationEnd,
+                           uint8 daysTillVotingStart, uint8 dayTillsVotingEnd) public onlyElectionAdmin {
+
+        uint256 registrationStart = daysTillRegistrationStart * 1 days;
+        uint256 registrationEnd = daysTillRegistrationEnd * 1 days;
+
+        uint256 votingStart = daysTillVotingStart * 1 days;
+        uint256 votingEnd = dayTillsVotingEnd * 1 days;
+
+        registrationPhase = TimeFrame(now + registrationStart, now + registrationEnd);
+        votingPhase = TimeFrame(now + votingStart, now + votingEnd);
+
+        delete presCandidates;
+        delete vicePresCandidates;
+        delete senCandidates;
+        delete voters;
+
+    }
+
     function registerCandidate(bytes32 _name, bytes32 _partyList, string memory _imgHash, string memory _candidacy)
         public
         // onlyOnCandidateRegistrationTimeFrame
