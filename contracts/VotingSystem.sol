@@ -147,6 +147,9 @@ contract VotingSystem {
         else if (strEquals(_candidacy, 'Senator')) {
             senCandidates.push(Candidate(_name, _partyList, _imgHash, 0));
         }
+        else {
+            revert('Invalid Candidacy Input');
+        }
     }
 
     function registerVoter(bytes32 _name)
@@ -196,6 +199,9 @@ contract VotingSystem {
         else if (strEquals(_candidacy, 'Senator')) {
             voteSenator(_candidateName);
         }
+        else {
+            revert('Invalid Candidacy Input');
+        }
     }
 
     function getCandidateByIndex(uint8 _index, string memory _candidacy)
@@ -233,6 +239,9 @@ contract VotingSystem {
                 senCandidates[_index].votes
             );
         }
+        else {
+            revert('Invalid Candidacy Input');
+        }
     }
 
     function getCandidateByName(bytes32 _name, string memory _candidacy)
@@ -249,6 +258,9 @@ contract VotingSystem {
         else if (strEquals(_candidacy, 'Senator'))
         {
             return getCandidateFromList(_name, senCandidates);
+        }
+        else {
+            revert('Invalid Candidacy Input');
         }
     }
 
@@ -304,6 +316,7 @@ contract VotingSystem {
 
             }
         }
+        revert('Unregistered Voter');
     }
 
     function getVoterCount()
@@ -338,6 +351,7 @@ contract VotingSystem {
                 );
             }
         }
+        revert('Unregistered Candidate');
     }
 
     function strEquals(string memory a, string memory b) private pure returns (bool) {

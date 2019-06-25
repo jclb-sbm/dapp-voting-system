@@ -465,6 +465,73 @@ contract("VotingSystemTest", accounts => {
 
     });
 
+    it('Function Parameters with Invalid Candidacy should expect VM Revert Error', async () => {
+        let contract = await VotingSystem.deployed();
+
+        try {
+            await contract.registerCandidate(web3.utils.asciiToHex('Candidate Name'),
+                                             web3.utils.asciiToHex('Candidate Party List'),
+                                             'Image Hash',
+                                             'Invalid Candicacy');
+            assert.fail();
+        }
+        catch(err) {
+            assert.equal(err.message.slice(83, err.message.length),
+                         'Invalid Candidacy Input.');
+        }
+
+        try {
+            await contract.voteCandidate(web3.utils.asciiToHex('1st President Name'),
+                                     'Invalid Candidacy',
+                                      web3.utils.asciiToHex('1st Voter Name'));
+            assert.fail();
+        }
+        catch(err) {
+            assert.equal(err.message.slice(83, err.message.length),
+                         'Invalid Candidacy Input.');
+        }
+
+        // Solidity Public View Function does not seem to return the revert error msg
+        try {
+            await contract.getCandidateByIndex(0, 'Invalid Candidacy');
+            assert.fail();
+        }
+        catch(err) {
+            assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert');
+        }
+
+        try {
+            await contract.getCandidateByName(web3.utils.asciiToHex('1st President Name'),
+                                              'Invalid Candidacy');
+            assert.fail();
+        }
+        catch(err) {
+            assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert');
+        }
+    });
+
+    it('Querying Unregistered Candidates and Voter should expect VM Revert Error', async () => {
+        let contract = await VotingSystem.deployed();
+
+        // Solidity Public View Function does not seem to return the revert error msg
+        try {
+            await contract.getCandidateByName(web3.utils.asciiToHex('Unregistered President'),
+                                              'President');
+            assert.fail();
+        }
+        catch(err) {
+            assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert');
+        }
+
+        try {
+            await contract.getVoterByName(web3.utils.asciiToHex('Unregistered Voter'));
+            assert.fail();
+        }
+        catch(err) {
+            assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert');
+        }
+    });
+
     it('1st Voter will vote for the 1st Candidates registered respectively', async () =>{
         let contract = await VotingSystem.deployed();
 
@@ -587,17 +654,19 @@ contract("VotingSystemTest", accounts => {
 
         try {
             await contract.registerVoter(web3.utils.asciiToHex('Early Voter Name'));
+            assert.fail();
         }
         catch(err) {
             assert.equal(err.message.slice(83, err.message.length),
-                            'Registration Prohibited.');
+                         'Registration Prohibited.');
         }
 
         try {
             await contract.registerCandidate(web3.utils.asciiToHex('Early Candidate Name'),
                                              web3.utils.asciiToHex('Early Candidate Party List'),
-                                         'Image Hash',
-                                         'President');
+                                             'Image Hash',
+                                             'President');
+            assert.fail();
         }
         catch(err) {
             assert.equal(err.message.slice(83, err.message.length),
@@ -606,12 +675,14 @@ contract("VotingSystemTest", accounts => {
 
         try {
             await contract.voteCandidate(web3.utils.asciiToHex('Early President Name'),
-                                     'President',
-                                     web3.utils.asciiToHex('Early Voter Name'));
+                                         'President',
+                                         web3.utils.asciiToHex('Early Voter Name'));
+            assert.fail();
         }
         catch(err) {
             assert.equal(err.message.slice(83, err.message.length),
                          'Voting Prohibited.');
         }
     });
+
 });
