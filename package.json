@@ -8,14 +8,16 @@
     "lint": "vue-cli-service lint",
     "migrate": "truffle migrate",
     "compile": "truffle compile",
-    "test": "truffle test",
+    "test": "truffle test --network test",
     "coverage": "solidity-coverage",
-    "server": "testrpc-sc --port 8555 -l 0xfffffffffff -g 0x01"
+    "test-server": "testrpc-sc --port 8555 -l 0xfffffffffff -g 0x01"
   },
   "dependencies": {
     "bootstrap": "^4.3.1",
     "bootstrap-vue": "^2.0.0-rc.23",
     "core-js": "^2.6.5",
+    "ganache-cli": "^6.4.4",
+    "ganache-core": "^2.5.6",
     "ipfs": "^0.36.4",
     "jquery": "^3.4.1",
     "moment": "^2.24.0",

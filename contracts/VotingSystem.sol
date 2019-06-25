@@ -136,7 +136,7 @@ contract VotingSystem {
 
     function registerCandidate(bytes32 _name, bytes32 _partyList, string memory _imgHash, string memory _candidacy)
         public
-        // onlyOnCandidateRegistrationTimeFrame
+        onlyOnRegistrationTimeFrame
     {
         if (strEquals(_candidacy, 'President')) {
             presCandidates.push(Candidate(_name, _partyList, _imgHash, 0));
@@ -151,7 +151,8 @@ contract VotingSystem {
 
     function registerVoter(bytes32 _name)
         public
-        // onlyOnRegistrationTimeFrame
+        onlyOnRegistrationTimeFrame
+        onlyUnregisteredVoter(_name)
     {
         voters.push(Voter(_name, true));
     }
@@ -183,7 +184,7 @@ contract VotingSystem {
     function voteCandidate(bytes32 _candidateName, string memory _candidacy, bytes32 _voterName)
         public
         onlyValidVoter(_voterName)
-        // onlyOnVotingTimeFrame
+        onlyOnVotingTimeFrame
     {
         if (strEquals(_candidacy, 'President'))
         {
