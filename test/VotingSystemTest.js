@@ -2,7 +2,70 @@ const VotingSystem = artifacts.require("VotingSystem");
 const { time, expectRevert } = require('openzeppelin-test-helpers');
 
 contract("VotingSystemTest", accounts => {
-    it('Register 1st Voter and Get Voter By Index 0', async () => {
+
+    it('Reset Election without Admin', async () => {
+        let contract = await VotingSystem.deployed();
+
+        try {
+            await contract.resetElection(0, 0, 0, 0, {from: accounts[1]});
+            assert.fail();
+        }
+        catch(err) {
+            assert.equal(err.message.slice(83, err.message.length),
+                         "You don't have administration rights.");
+        }
+    });
+
+    it('Reset Election with Admin', async () => {
+        let contract = await VotingSystem.deployed();
+
+        let daysTillRegistrationStart = 1;
+        let daysTillRegistrationEnd = 2;
+        let daysTillVotingStart = 3;
+        let dayTillsVotingEnd = 4;
+
+        await contract.resetElection(daysTillRegistrationStart, daysTillRegistrationEnd,
+                                     daysTillVotingStart, dayTillsVotingEnd);
+
+        let voterCount = await contract.getVoterCount();
+        let presCount = await contract.getPresCount();
+        let vicePresCount = await contract.getVicePresCount();
+        let senCount = await contract.getSenCount();
+
+        assert.equal(voterCount, 0);
+        assert.equal(presCount, 0);
+        assert.equal(vicePresCount, 0);
+        assert.equal(senCount, 0);
+    });
+
+    it('Pre Registration Phase - Register Candidates and Voters Should Expect VM Error' , async () => {
+        let contract = await VotingSystem.deployed();
+
+        try {
+            await contract.registerVoter(web3.utils.asciiToHex('Early Voter Name'));
+            assert.fail();
+        }
+        catch(err) {
+            assert.equal(err.message.slice(83, err.message.length),
+                         'Registration Prohibited.');
+        }
+
+        try {
+            await contract.registerCandidate(web3.utils.asciiToHex('Early Candidate Name'),
+                                             web3.utils.asciiToHex('Early Candidate Party List'),
+                                             'Image Hash',
+                                             'President');
+            assert.fail();
+        }
+        catch(err) {
+            assert.equal(err.message.slice(83, err.message.length),
+                         'Registration Prohibited.');
+        }
+    });
+
+    it('Registration Phase - Register 1st Voter and Get Voter By Index 0', async () => {
+        await time.increase(time.duration.days(1));
+
         let contract = await VotingSystem.deployed();
 
         await contract.registerVoter(web3.utils.asciiToHex('1st Voter Name'));
@@ -18,7 +81,7 @@ contract("VotingSystemTest", accounts => {
         assert.equal(expectedValidity, actualValidity, 'Unexpected Voter Validity');
     });
 
-    it('Register Voter and Get Voter By Name', async () => {
+    it('Registration Phase - Register Voter and Get Voter By Name', async () => {
         let contract = await VotingSystem.deployed();
 
         let actualVoter = await contract.getVoterByName(web3.utils.asciiToHex('1st Voter Name'));
@@ -32,7 +95,7 @@ contract("VotingSystemTest", accounts => {
         assert.equal(expectedValidity, actualValidity, 'Unexpected Voter Validity');
     });
 
-    it('Register Same Voter and Expect VM Error', async () => {
+    it('Registration Phase - Register Same Voter and Expect VM Error', async () => {
         let contract = await VotingSystem.deployed();
 
         // Use current version of Ganache (v2.1.6) doesn't return revert reason. Use v2.2.0 or newer.
@@ -51,7 +114,7 @@ contract("VotingSystemTest", accounts => {
 
     });
 
-    it('Register 3 New Voters and Get Last Voter By Last Index', async () => {
+    it('Registration Phase - Register 3 New Voters and Get Last Voter By Last Index', async () => {
         let contract = await VotingSystem.deployed();
 
         await contract.registerVoter(web3.utils.asciiToHex('2nd Voter Name'));
@@ -71,7 +134,7 @@ contract("VotingSystemTest", accounts => {
         assert.equal(expectedValidity, actualValidity, 'Unexpected Voter Validity');
     });
 
-    it('Register 1st Presidential Candidate and Get Candidate By Index 0', async () => {
+    it('Registration Phase - Register 1st Presidential Candidate and Get Candidate By Index 0', async () => {
         let contract = await VotingSystem.deployed();
 
         await contract.registerCandidate(web3.utils.asciiToHex('1st President Name'),
@@ -96,7 +159,7 @@ contract("VotingSystemTest", accounts => {
         assert.equal(expectedVotes, actualVotes, 'Unexpected President Votes');
     });
 
-    it('Get Registered Presidential Candidate By Name', async () => {
+    it('Registration Phase - Get Registered Presidential Candidate By Name', async () => {
         let contract = await VotingSystem.deployed();
 
         let actualCandidate = await contract.getCandidateByName(web3.utils.asciiToHex('1st President Name'), 'President');
@@ -118,7 +181,7 @@ contract("VotingSystemTest", accounts => {
 
 
 
-    it('Register 3 New Presidential Candidate and Get Last Presidential Candidate By Last Index', async () => {
+    it('Registration Phase - Register 3 New Presidential Candidate and Get Last Presidential Candidate By Last Index', async () => {
         let contract = await VotingSystem.deployed();
 
         await contract.registerCandidate(web3.utils.asciiToHex('2nd President Name'),
@@ -155,7 +218,7 @@ contract("VotingSystemTest", accounts => {
         assert.equal(expectedVotes, actualVotes, 'Unexpected President Votes');
     });
 
-    it('Register 1st Vice Presidential Candidate and Get Candidate By Index 0', async () => {
+    it('Registration Phase - Register 1st Vice Presidential Candidate and Get Candidate By Index 0', async () => {
         let contract = await VotingSystem.deployed();
 
         await contract.registerCandidate(web3.utils.asciiToHex('1st Vice President Name'),
@@ -180,7 +243,7 @@ contract("VotingSystemTest", accounts => {
         assert.equal(expectedVotes, actualVotes, 'Unexpected Vice President Votes');
     });
 
-    it('Get Registered Vice Presidential Candidate By Name', async () => {
+    it('Registration Phase - Get Registered Vice Presidential Candidate By Name', async () => {
         let contract = await VotingSystem.deployed();
 
         let actualCandidate = await contract.getCandidateByName(web3.utils.asciiToHex('1st Vice President Name'), 'Vice President');
@@ -200,7 +263,7 @@ contract("VotingSystemTest", accounts => {
         assert.equal(expectedVotes, actualVotes, 'Unexpected President Votes');
     });
 
-    it('Register 3 New Vice Presidential Candidate and Get Last Vice Presidential Candidate By Last Index', async () => {
+    it('Registration Phase - Register 3 New Vice Presidential Candidate and Get Last Vice Presidential Candidate By Last Index', async () => {
         let contract = await VotingSystem.deployed();
 
         await contract.registerCandidate(web3.utils.asciiToHex('2nd Vice President Name'),
@@ -237,7 +300,7 @@ contract("VotingSystemTest", accounts => {
         assert.equal(expectedVotes, actualVotes, 'Unexpected Vice President Votes');
     });
 
-    it('Register 1st Senatorial Candidate and Get Candidate By Index 0', async () => {
+    it('Registration Phase - Register 1st Senatorial Candidate and Get Candidate By Index 0', async () => {
         let contract = await VotingSystem.deployed();
 
         await contract.registerCandidate(web3.utils.asciiToHex('1st Senator Name'),
@@ -263,7 +326,7 @@ contract("VotingSystemTest", accounts => {
         assert.equal(expectedVotes, actualVotes, 'Unexpected Senator Votes');
     });
 
-    it('Get Registered Senatorial Candidate By Name', async () => {
+    it('Registration Phase - Get Registered Senatorial Candidate By Name', async () => {
         let contract = await VotingSystem.deployed();
 
         let actualCandidate = await contract.getCandidateByName(web3.utils.asciiToHex('1st Senator Name'), 'Senator');
@@ -285,7 +348,7 @@ contract("VotingSystemTest", accounts => {
 
 
 
-    it('Register 3 New Senatorial Candidate and Get Last Senatorial Candidate By Last Index', async () => {
+    it('Registration Phase - Register 3 New Senatorial Candidate and Get Last Senatorial Candidate By Last Index', async () => {
         let contract = await VotingSystem.deployed();
 
         await contract.registerCandidate(web3.utils.asciiToHex('2nd Senator Name'),
@@ -322,7 +385,7 @@ contract("VotingSystemTest", accounts => {
         assert.equal(expectedVotes, actualVotes, 'Unexpected Senator Votes');
     });
 
-    it('Register Existing Presidential Candidate and Expect VM Error', async () => {
+    it('Registration Phase - Register Existing Presidential Candidate and Expect VM Error', async () => {
         let contract = await VotingSystem.deployed();
 
         // Use current version of Ganache (v2.1.6) doesn't return revert reason. Use v2.2.0 or newer.
@@ -369,7 +432,7 @@ contract("VotingSystemTest", accounts => {
         }
     });
 
-    it('Register Existing Vice Presidential Candidate and Expect VM Error', async () => {
+    it('Registration Phase - Register Existing Vice Presidential Candidate and Expect VM Error', async () => {
         let contract = await VotingSystem.deployed();
 
         // Use current version of Ganache (v2.1.6) doesn't return revert reason. Use v2.2.0 or newer.
@@ -417,7 +480,7 @@ contract("VotingSystemTest", accounts => {
 
     });
 
-    it('Register Existing Senatorial Candidate and Expect VM Error', async () => {
+    it('Registration Phase - Register Existing Senatorial Candidate and Expect VM Error', async () => {
         let contract = await VotingSystem.deployed();
 
         // Use current version of Ganache (v2.1.6) doesn't return revert reason. Use v2.2.0 or newer.
@@ -465,7 +528,7 @@ contract("VotingSystemTest", accounts => {
 
     });
 
-    it('Function Parameters with Invalid Candidacy should expect VM Revert Error', async () => {
+    it('Registration Phase - Register Candidate with Invalid Candidacy should expect VM Error', async () => {
         let contract = await VotingSystem.deployed();
 
         try {
@@ -479,6 +542,61 @@ contract("VotingSystemTest", accounts => {
             assert.equal(err.message.slice(83, err.message.length),
                          'Invalid Candidacy Input.');
         }
+    });
+
+    it('Post Registration Phase - Register Candidates and Voters Should Expect VM Error', async () => {
+        await time.increase(time.duration.days(1));
+
+        let contract = await VotingSystem.deployed();
+
+        try {
+            await contract.registerVoter(web3.utils.asciiToHex('Late Voter Name'));
+        }
+        catch(err) {
+            assert.equal(err.message.slice(83, err.message.length),
+                         'Registration Prohibited.');
+        }
+
+        try {
+            await contract.registerCandidate(web3.utils.asciiToHex('Late Candidate Name'),
+                                             web3.utils.asciiToHex('Late Candidate Party List'),
+                                         'Image Hash',
+                                         'President');
+        }
+        catch(err) {
+            assert.equal(err.message.slice(83, err.message.length),
+                         'Registration Prohibited.');
+        }
+
+        try {
+            await contract.voteCandidate(web3.utils.asciiToHex('1st President Name'),
+                                     'President',
+                                     web3.utils.asciiToHex('Late Voter Name'));
+        }
+        catch(err) {
+            assert.equal(err.message.slice(83, err.message.length),
+                         'Voting Prohibited.');
+        }
+    });
+
+    it('Pre Voting Phase - Voting should expect VM Error', async () => {
+        let contract = await VotingSystem.deployed();
+
+        try {
+            await contract.voteCandidate(web3.utils.asciiToHex('Early President Name'),
+                                         'President',
+                                         web3.utils.asciiToHex('Early Voter Name'));
+            assert.fail();
+        }
+        catch(err) {
+            assert.equal(err.message.slice(83, err.message.length),
+                         'Voting Prohibited.');
+        }
+    });
+
+    it('Voting Phase - Voting for an Invalid Candidacy should expect VM Exception', async () => {
+        await time.increase(time.duration.days(1));
+        let contract = await VotingSystem.deployed();
 
         try {
             await contract.voteCandidate(web3.utils.asciiToHex('1st President Name'),
@@ -490,6 +608,71 @@ contract("VotingSystemTest", accounts => {
             assert.equal(err.message.slice(83, err.message.length),
                          'Invalid Candidacy Input.');
         }
+    });
+
+    it('Voting Phase - 1st Voter will vote for the 1st Candidates registered respectively', async () =>{
+        let contract = await VotingSystem.deployed();
+
+        await contract.voteCandidate(web3.utils.asciiToHex('1st President Name'),
+                                     'President',
+                                     web3.utils.asciiToHex('1st Voter Name'));
+
+        await contract.voteCandidate(web3.utils.asciiToHex('1st Vice President Name'),
+                                     'Vice President',
+                                     web3.utils.asciiToHex('1st Voter Name'));
+
+        await contract.voteCandidate(web3.utils.asciiToHex('1st Senator Name'),
+                                     'Senator',
+                                     web3.utils.asciiToHex('1st Voter Name'));
+
+        await contract.invalidateVoter(web3.utils.asciiToHex('1st Voter Name'));
+
+        let actualPresVotes = await contract.getVotes(web3.utils.asciiToHex('1st President Name'), 'President');
+        let actualVicePresVotes = await contract.getVotes(web3.utils.asciiToHex('1st Vice President Name'), 'Vice President');
+        let actualSenVotes = await contract.getVotes(web3.utils.asciiToHex('1st Senator Name'), 'Senator');
+
+        let expectedPresVotes = 1;
+        let expectedVicePresVotes = 1;
+        let expectedSenVotes = 1;
+
+        assert.equal(actualPresVotes, expectedPresVotes);
+        assert.equal(actualVicePresVotes, expectedVicePresVotes);
+        assert.equal(actualSenVotes, expectedSenVotes);
+    });
+
+    it('Voting Phase - Voting again should expect VM Exception', async () => {
+        let contract = await VotingSystem.deployed();
+
+        try {
+            await contract.voteCandidate(web3.utils.asciiToHex('1st President Name'),
+                                         'President',
+                                         web3.utils.asciiToHex('1st Voter Name'));
+        }
+        catch(err)
+        {
+            assert.equal(err.message.slice(83, err.message.length),
+                         'You are not a Valid Voter.');
+        }
+    });
+
+    it('Post Voting Phase - Voting should expect VM Error', async () => {
+        let contract = await VotingSystem.deployed();
+        await time.increase(time.duration.days(1));
+
+        try {
+            await contract.voteCandidate(web3.utils.asciiToHex('Late President Name'),
+                                         'President',
+                                         web3.utils.asciiToHex('Late Voter Name'));
+            assert.fail();
+        }
+        catch(err) {
+            assert.equal(err.message.slice(83, err.message.length),
+                         'Voting Prohibited.');
+        }
+    });
+
+    it('Function Parameters with Invalid Candidacy should expect VM Revert Error', async () => {
+        let contract = await VotingSystem.deployed();
 
         // Solidity Public View Function does not seem to return the revert error msg
         try {
@@ -531,158 +714,4 @@ contract("VotingSystemTest", accounts => {
             assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert');
         }
     });
-
-    it('1st Voter will vote for the 1st Candidates registered respectively', async () =>{
-        let contract = await VotingSystem.deployed();
-
-        await contract.voteCandidate(web3.utils.asciiToHex('1st President Name'),
-                                     'President',
-                                     web3.utils.asciiToHex('1st Voter Name'));
-
-        await contract.voteCandidate(web3.utils.asciiToHex('1st Vice President Name'),
-                                     'Vice President',
-                                     web3.utils.asciiToHex('1st Voter Name'));
-
-        await contract.voteCandidate(web3.utils.asciiToHex('1st Senator Name'),
-                                     'Senator',
-                                     web3.utils.asciiToHex('1st Voter Name'));
-
-        await contract.invalidateVoter(web3.utils.asciiToHex('1st Voter Name'));
-
-        let actualPresVotes = await contract.getVotes(web3.utils.asciiToHex('1st President Name'), 'President');
-        let actualVicePresVotes = await contract.getVotes(web3.utils.asciiToHex('1st Vice President Name'), 'Vice President');
-        let actualSenVotes = await contract.getVotes(web3.utils.asciiToHex('1st Senator Name'), 'Senator');
-
-        let expectedPresVotes = 1;
-        let expectedVicePresVotes = 1;
-        let expectedSenVotes = 1;
-
-        assert.equal(actualPresVotes, expectedPresVotes);
-        assert.equal(actualVicePresVotes, expectedVicePresVotes);
-        assert.equal(actualSenVotes, expectedSenVotes);
-    });
-
-    it('Voting again should expect VM Exception', async () => {
-        let contract = await VotingSystem.deployed();
-
-        try {
-            await contract.voteCandidate(web3.utils.asciiToHex('1st President Name'),
-                                         'President',
-                                         web3.utils.asciiToHex('1st Voter Name'));
-        }
-        catch(err)
-        {
-            assert.equal(err.message.slice(83, err.message.length),
-                         'You are not a Valid Voter.');
-        }
-    });
-
-    it('Advance Time by 5 Days and Election Functionalities should be Invalid', async () => {
-        await time.increase(time.duration.days(5));
-
-        let contract = await VotingSystem.deployed();
-
-        try {
-            await contract.registerVoter(web3.utils.asciiToHex('Late Voter Name'));
-        }
-        catch(err) {
-            assert.equal(err.message.slice(83, err.message.length),
-                         'Registration Prohibited.');
-        }
-
-        try {
-            await contract.registerCandidate(web3.utils.asciiToHex('Late Candidate Name'),
-                                             web3.utils.asciiToHex('Late Candidate Party List'),
-                                         'Image Hash',
-                                         'President');
-        }
-        catch(err) {
-            assert.equal(err.message.slice(83, err.message.length),
-                         'Registration Prohibited.');
-        }
-
-        try {
-            await contract.voteCandidate(web3.utils.asciiToHex('1st President Name'),
-                                     'President',
-                                     web3.utils.asciiToHex('Late Voter Name'));
-        }
-        catch(err) {
-            assert.equal(err.message.slice(83, err.message.length),
-                         'Voting Prohibited.');
-        }
-    });
-
-    it('Reset Election without Admin', async () => {
-        let contract = await VotingSystem.deployed();
-
-        let daysTillRegistrationStart = 1;
-        let daysTillRegistrationEnd = 2;
-        let daysTillVotingStart = 3;
-        let dayTillsVotingEnd = 4;
-
-        try {
-            await contract.resetElection(daysTillRegistrationStart, daysTillRegistrationEnd,
-                                         daysTillVotingStart, dayTillsVotingEnd, {from: accounts[1]})
-            assert.fail();
-        }
-        catch(err) {
-            assert.equal(err.message.slice(83, err.message.length),
-                         "You don't have administration rights.");
-        }
-    });
-
-    it('Reset Election with Admin', async () => {
-        let contract = await VotingSystem.deployed();
-
-        let daysTillRegistrationStart = 1;
-        let daysTillRegistrationEnd = 2;
-        let daysTillVotingStart = 3;
-        let dayTillsVotingEnd = 4;
-
-        await contract.resetElection(daysTillRegistrationStart, daysTillRegistrationEnd,
-                                     daysTillVotingStart, dayTillsVotingEnd);
-
-        let voterCount = await contract.getVoterCount();
-        let presCount = await contract.getPresCount();
-        let vicePresCount = await contract.getVicePresCount();
-        let senCount = await contract.getSenCount();
-
-        assert.equal(voterCount, 0);
-        assert.equal(presCount, 0);
-        assert.equal(vicePresCount, 0);
-        assert.equal(senCount, 0);
-
-        try {
-            await contract.registerVoter(web3.utils.asciiToHex('Early Voter Name'));
-            assert.fail();
-        }
-        catch(err) {
-            assert.equal(err.message.slice(83, err.message.length),
-                         'Registration Prohibited.');
-        }
-
-        try {
-            await contract.registerCandidate(web3.utils.asciiToHex('Early Candidate Name'),
-                                             web3.utils.asciiToHex('Early Candidate Party List'),
-                                             'Image Hash',
-                                             'President');
-            assert.fail();
-        }
-        catch(err) {
-            assert.equal(err.message.slice(83, err.message.length),
-                         'Registration Prohibited.');
-        }
-
-        try {
-            await contract.voteCandidate(web3.utils.asciiToHex('Early President Name'),
-                                         'President',
-                                         web3.utils.asciiToHex('Early Voter Name'));
-            assert.fail();
-        }
-        catch(err) {
-            assert.equal(err.message.slice(83, err.message.length),
-                         'Voting Prohibited.');
-        }
-    });
-
 });
