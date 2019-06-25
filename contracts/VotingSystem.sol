@@ -54,21 +54,21 @@ contract VotingSystem {
         _;
     }
 
-    modifier onlyUnregisteredCandidate(bytes32 _voterName, string memory _candidacy) {
-        if (strEquals(_candidacy, 'President')) {
-            for (uint8 i = 0; i < presCandidates.length; i++) {
-                require(presCandidates[i].name != _voterName, 'You are already registered as a candidate');
-            }
+    modifier onlyUnregisteredCandidate(bytes32 _candidateName) {
+
+        for (uint8 i = 0; i < presCandidates.length; i++) {
+            require(presCandidates[i].name != _candidateName,
+                    'You are already registered as a Presidential Candidate');
         }
-        else if (strEquals(_candidacy, 'Vice President')) {
-            for (uint8 i = 0; i < vicePresCandidates.length; i++) {
-                require(vicePresCandidates[i].name != _voterName, 'You are already registered as a candidate');
-            }
+
+        for (uint8 i = 0; i < vicePresCandidates.length; i++) {
+            require(vicePresCandidates[i].name != _candidateName,
+                    'You are already registered as a Vice Presidential Candidate');
         }
-        else if (strEquals(_candidacy, 'Senator')) {
-            for (uint8 i = 0; i < senCandidates.length; i++) {
-                require(senCandidates[i].name != _voterName, 'You are already registered as a candidate');
-            }
+
+        for (uint8 i = 0; i < senCandidates.length; i++) {
+            require(senCandidates[i].name != _candidateName,
+                    'You are already registered as a Senatorial Candidate');
         }
         _;
     }
@@ -131,12 +131,12 @@ contract VotingSystem {
         delete vicePresCandidates;
         delete senCandidates;
         delete voters;
-
     }
 
     function registerCandidate(bytes32 _name, bytes32 _partyList, string memory _imgHash, string memory _candidacy)
         public
         onlyOnRegistrationTimeFrame
+        onlyUnregisteredCandidate(_name)
     {
         if (strEquals(_candidacy, 'President')) {
             presCandidates.push(Candidate(_name, _partyList, _imgHash, 0));
@@ -183,8 +183,8 @@ contract VotingSystem {
 
     function voteCandidate(bytes32 _candidateName, string memory _candidacy, bytes32 _voterName)
         public
-        onlyValidVoter(_voterName)
         onlyOnVotingTimeFrame
+        onlyValidVoter(_voterName)
     {
         if (strEquals(_candidacy, 'President'))
         {
