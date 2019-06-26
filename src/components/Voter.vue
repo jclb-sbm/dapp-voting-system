@@ -76,7 +76,8 @@
 
                                 <div class="card-footer">
                                     <div class="custom-control custom-checkbox">
-                                        <input class="custom-control-input" type="checkbox" :id="candidate.name" :value="candidate.name" v-model="chosenSenators"/>
+                                        <input class="custom-control-input" type="checkbox" :id="candidate.name" :value="candidate.name"
+                                        v-model="chosenSenators" :disabled="chosenSenators.length > 5 && chosenSenators.indexOf(candidate.name) === -1"/>
                                         <label class="custom-control-label" :for="candidate.name ">
                                             Vote as Senator
                                         </label>
@@ -86,6 +87,14 @@
 
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-4 offset-4">
+                    <b-alert v-model="showDismissibleAlert" false="dark" dismissible fade>
+                        {{ notification }}
+                    </b-alert>
                 </div>
             </div>
 
@@ -128,6 +137,9 @@
                 chosenPres: null,
                 chosenVicePres: null,
                 chosenSenators: [],
+
+                showDismissibleAlert: false,
+                notification: ''
             }
         },
         created() {
@@ -153,15 +165,25 @@
             initParticlesJS() {
                 particlesJS('particles-js', ParticleSettings);
             },
+            displayNotification(notification) {
+                this.showDismissibleAlert = true;
+                this.notification = notification;
+            },
             voteCandidate: async function (candidateName, candidacy) {
-                console.log(candidateName);
-
-                await this.contract
-                          .methods
-                          .voteCandidate(web3.utils.asciiToHex(candidateName), candidacy, web3.utils.asciiToHex(this.voterName))
-                          .send({
-                            from: this.defaultAccount
-                        });
+                try {
+                    await this.contract
+                              .methods
+                              .voteCandidate(web3.utils.asciiToHex(candidateName),
+                                             candidacy,
+                                             web3.utils.asciiToHex(this.voterName))
+                              .send({
+                                  from: this.defaultAccount
+                              });
+                }
+                catch(error) {
+                    this.displayNotification(error.message);
+                    return;
+                }
             },
             loadCandidates: async function () {
                 let presCount = await this.contract.methods.getPresCount().call();
@@ -206,13 +228,23 @@
                     this.senCandidates.push(candidate);
                 }
             },
-            finishVoting: function () {
+            finishVoting: async function () {
+
                 this.voteCandidate(this.chosenPres, 'President');
                 this.voteCandidate(this.chosenVicePres, 'Vice President');
+
 
                 for (let i=0; i<this.chosenSenators.length; i++) {
                     this.voteCandidate(this.chosenSenators[i], 'Senator');
                 }
+                this.displayNotification('Successful Voting');
+
+                await this.contract
+                          .methods
+                          .invalidateVoter(web3.utils.asciiToHex(this.voterName))
+                          .send({
+                              from: this.defaultAccount
+                          });
             },
             logoutVoter: function () {
                 this.voter = null;

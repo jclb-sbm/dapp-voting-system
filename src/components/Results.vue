@@ -162,7 +162,6 @@
                         votes: candidateTuple[3]
                     }
                     this.senCandidates.push(candidate);
-                    console.log(candidate)
                 }
                 this.presCandidates.sort((a, b) => a.votes < b.votes);
                 this.vicePresCandidates.sort((a, b) => a.votes < b.votes);

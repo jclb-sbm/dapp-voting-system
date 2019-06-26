@@ -4,6 +4,14 @@
         </div>
         <div id="main" class="container-fluid">
             <div class="row">
+                <div class="col-6 offset-3">
+                    <b-alert v-model="showDismissibleAlert" false="dark" dismissible fade>
+                        {{ notification }}
+                    </b-alert>
+                </div>
+            </div>
+
+            <div class="row">
                 <div class="col-12 d-flex justify-content-center">
                     <h1 class="display-2 text-white">Admin Page</h1>
                 </div>
@@ -32,6 +40,13 @@
                     </button>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-3 offset-3">
+                    <button class="btn btn-lg btn-outline-light btn-block mt-4" @click="populateSampleCandidates">
+                        Populate Samples
+                    </button>
+                </div>
+            </div>
         </div>
 
         <b-modal id="setupElectionModal" header-border-variant="secondary" footer-border-variant="secondary"
@@ -49,7 +64,7 @@
                         <p>Start:</p>
                     </div>
                     <div class="col-4">
-                        <date-picker v-model="regStartInput" :config="options" @change="setDate">
+                        <date-picker v-model="regStartInput" :config="options">
                         </date-picker>
                     </div>
                     <div class="col-1 d-flex justify-content-center timeframe-field">
@@ -211,6 +226,9 @@
 
                 fileName: 'Choose Picture',
                 buffer: null,
+
+                showDismissibleAlert: false,
+                notification: null,
             }
         },
         created() {
@@ -230,22 +248,26 @@
             this.contract = new web3.eth.Contract(contractABI, contractAddress);
         },
         watch: {
-            regStartInput: function (newDate, oldDate) {
+            regStartInput: function (newDate) {
                 this.regStart = this.initDate(newDate);
             },
-            regFinInput: function (newDate, oldDate) {
+            regFinInput: function (newDate) {
                 this.regFin = this.initDate(newDate);
             },
-            voteStartInput: function (newDate, oldDate) {
+            voteStartInput: function (newDate) {
                 this.voteStart = this.initDate(newDate);
             },
-            voteFinInput: function (newDate, oldDate) {
+            voteFinInput: function (newDate) {
                 this.voteFin = this.initDate(newDate);
             },
         },
         methods: {
             initParticlesJS() {
                 particlesJS('particles-js', ParticleSettings);
+            },
+            displayNotification(notification) {
+                this.showDismissibleAlert = true;
+                this.notification = notification;
             },
             initDate: function (date) {
                 // Format must be: YYYY-MM-DD
@@ -255,16 +277,46 @@
 
                 return moment([year, month - 1, day]);
             },
-            setDate: function () {
-                console.log('setDate');
-            },
             setupElection: function () {
                 let now = moment().startOf('day');
 
-                let daysTillRegStart = this.regStart.diff(now, 'days');
-                let daysTillRegFin = this.regFin.diff(now, 'days');
-                let daysTillVoteStart = this.voteStart.diff(now, 'days');
-                let daysTillVoteFin = this.voteFin.diff(now, 'days');
+                let daysTillRegStart = 0;
+                let daysTillRegFin = 0;
+                let daysTillVoteStart = 0;
+                let daysTillVoteFin = 0;
+
+                if (this.regStart !== 0) {
+                    daysTillRegStart = this.regStart.diff(now, 'days');
+                }
+
+                if (this.regFin !== 0) {
+                    daysTillRegFin = this.regFin.diff(now, 'days');
+                }
+
+                if (this.voteStart !== 0) {
+                    daysTillVoteStart = this.voteStart.diff(now, 'days');
+                }
+
+                if (this.voteFin !== 0) {
+                    daysTillVoteFin = this.voteFin.diff(now, 'days');
+                }
+
+                if (daysTillRegStart < 0) {
+                    this.displayNotification('Invalid Input for Registration Time Frame Start');
+                    return;
+                }
+                else if (daysTillRegFin < 0) {
+                    this.displayNotification('Invalid Input for Registration Time Frame End');
+                    return;
+                }
+                else if (daysTillVoteStart < 0) {
+                    this.displayNotification('Invalid Input for Voting Time Frame Start');
+                    return;
+                }
+                else if (daysTillVoteFin < 0) {
+                    this.displayNotification('Invalid Input for Voting Time Frame End');
+                    return;
+                }
 
                 this.contract.methods
                     .resetElection(daysTillRegStart, daysTillRegFin,
@@ -272,6 +324,13 @@
                     .send({
                         from: this.defaultAccount,
                         gas: 1000000
+                    },
+                    (error) => {
+                        if (error) {
+                            this.displayNotification(error);
+                            return;
+                        }
+                        this.displayNotification('Election has been successfully reset.');
                     });
             },
             publishResults: async function () {
@@ -281,7 +340,7 @@
                 let hash = await ipfs.add(this.buffer);
                 this.candidate.imgHash = hash[0].hash;
 
-                await this.contract.methods
+                this.contract.methods
                     .registerCandidate(
                         web3.utils.asciiToHex(this.candidate.name),
                         web3.utils.asciiToHex(this.candidate.partyList),
@@ -290,38 +349,54 @@
                     .send({
                         from: this.defaultAccount,
                         gas: 1000000
-                    })
+                    },
+                    (error) => {
+                        if (error) {
+                            this.displayNotification(error.message.slice(74, 97));
+                            return;
+                        }
+                        this.displayNotification(`Candidate ${this.candidate.name} for ${this.candidate.candidacy} has been successfully registered.`);
+                    });
 
             },
-            registerVoter: async function () {
-                await this.contract.methods
+            registerVoter: function () {
+                this.contract.methods
                     .registerVoter(web3.utils.asciiToHex(this.voterName))
                     .send({
                         from: this.defaultAccount,
                         gas: 1000000
+                    },
+                    (error) => {
+                        if (error) {
+                            if (error.message.slice(74, 97) == 'Registration Prohibited') {
+                                this.displayNotification('Registration Prohibited');
+                            }
+                            else if (error.message.slice(74, 111) == 'You are already registered as a voter') {
+                                this.displayNotification('You are already registered as a voter');
+                            }
+                            else {
+                                this.displayNotification(error.msg);
+                            }
+                            return;
+                        }
+                        this.displayNotification(`Voter ${this.voterName} has been successfully registered.`);
                     });
             },
 
             getCandidate: async function () {
-                let candidate = await this.contract.methods
+                await this.contract.methods
                     .getCandidateByName(web3.utils.asciiToHex('B'), "President")
                     .call({
                         from: this.defaultAccount
                     });
-
-                console.log(candidate);
-                console.log(web3.utils.hexToUtf8(candidate[0]));
-                console.log(candidate[1]);
-                console.log(candidate[2].toString());
             },
             getVotes: async function () {
-                let votes = await this.contract.methods.getVotes(web3.utils.asciiToHex(this.candidateName),
+                await this.contract.methods.getVotes(web3.utils.asciiToHex(this.candidateName),
                     web3.utils.asciiToHex(this.candidateCandidacy)).call({
                     from: this.defaultAccount
                 })
-                console.log(votes.toString())
             },
-            async convertToBuffer(reader) {
+            convertToBuffer: async function (reader) {
                 return Buffer.from(reader);
             },
             captureFile(file) {
@@ -335,6 +410,84 @@
                     };
                 } else {
                     this.buffer = '';
+                }
+            },
+            populateSampleCandidates: async function() {
+                let sampleVoterNames = ['Voter 1', 'Voter 2', 'Voter 3', 'Voter 4'];
+
+                for (let sampleVoterName of sampleVoterNames) {
+                    this.contract.methods
+                        .registerVoter(web3.utils.asciiToHex(sampleVoterName))
+                        .send({
+                            from: this.defaultAccount,
+                            gas: 1000000
+                        });
+                }
+
+                let samplePresidents = [
+                    {name: 'President A', partyList: 'Party List A', imgHash: 'QmRXKfh7pmfHPmhLujUAqDQouBmx9gxRppwYRPtPsVjNd8', candidacy: 'President'},
+                    {name: 'President B', partyList: 'Party List B', imgHash: 'QmQSHEs35u6mNHGZZaEhiB2zdTQGv2TY2rfykiE9evAY97', candidacy: 'President'}
+                ];
+
+                for (let samplePresident of samplePresidents) {
+                    this.contract.methods
+                        .registerCandidate(
+                            web3.utils.asciiToHex(samplePresident.name),
+                            web3.utils.asciiToHex(samplePresident.partyList),
+                            samplePresident.imgHash,
+                            samplePresident.candidacy)
+                        .send({
+                            from: this.defaultAccount,
+                            gas: 1000000
+                        });
+                }
+
+                let sampleVicePresidents = [
+                    {name: 'Vice President A', partyList: 'Party List A', imgHash: 'QmesfUZeFKSXqiMjnV2REWUbp9uP5hdRYhWpBusRsawcsv', candidacy: 'Vice President'},
+                    {name: 'Vice President B', partyList: 'Party List B', imgHash: 'QmWA9YV5HYuR2iGq7HHcEZJyE9YKwM3SHxww9CVuWBGbSu', candidacy: 'Vice President'}
+                ];
+
+                for (let sampleVicePresident of sampleVicePresidents) {
+                    this.contract.methods
+                        .registerCandidate(
+                            web3.utils.asciiToHex(sampleVicePresident.name),
+                            web3.utils.asciiToHex(sampleVicePresident.partyList),
+                            sampleVicePresident.imgHash,
+                            sampleVicePresident.candidacy)
+                        .send({
+                            from: this.defaultAccount,
+                            gas: 1000000
+                        });
+                }
+
+                let sampleSenators = [
+                    {name: 'Senator A', partyList: 'Party List A', imgHash: 'QmNN3F82TN9vQTnVbpF1R6s8q76V1Cs19sT4xF2ujBTHwJ', candidacy: 'Senator'},
+                    {name: 'Senator B', partyList: 'Party List B', imgHash: 'QmPPq5CQU8TAyNdRyPwaiWzmyJ8TfBauht5ChWGmh7ENE1', candidacy: 'Senator'},
+                    {name: 'Senator C', partyList: 'Party List A', imgHash: 'QmXvibC24RQVm2DsRj8d95wpTGwRQXqZdwHHuEhUEnoCvy', candidacy: 'Senator'},
+                    {name: 'Senator D', partyList: 'Party List B', imgHash: 'QmWnxK2Q936LbHFS62DdMHezbKPZrZtPpLP3kBvqbJM1nS', candidacy: 'Senator'},
+                    {name: 'Senator E', partyList: 'Party List A', imgHash: 'QmXLNPRdnU93dVFsUKrjmHoKGXDXSq2qzgqUNhNEVKhtQM', candidacy: 'Senator'},
+                    {name: 'Senator F', partyList: 'Party List B', imgHash: 'QmNXhfysz3h4GP6aRK2jFTn2SSxX89D7jT4chhxGP5WnCm', candidacy: 'Senator'},
+                    {name: 'Senator G', partyList: 'Party List A', imgHash: 'QmbXX6s3nDFch9ums5t5qVYVBTaZSjpZCEbzEyQA1c5UjB', candidacy: 'Senator'},
+                    {name: 'Senator H', partyList: 'Party List B', imgHash: 'QmPcNrLVDKCp6Utb6ZyXyrA4PAASi9nzYyQvsSpBMaAdBR', candidacy: 'Senator'},
+                    {name: 'Senator I', partyList: 'Party List A', imgHash: 'QmXJarkcPv8YtpoM2samrfGPog6uzzK11ev8LSohiHYbyA', candidacy: 'Senator'},
+                    {name: 'Senator J', partyList: 'Party List B', imgHash: 'QmWDefcMNhjZFSsPWpp3fYpSNyFKgZ6MbsFXrXq4gowWxm', candidacy: 'Senator'},
+                    {name: 'Senator K', partyList: 'Party List A', imgHash: 'QmTq3fazcK3KPjbs6tgt4WQ4fvTybdAvoVjaCUYZSUZaNG', candidacy: 'Senator'},
+                    {name: 'Senator L', partyList: 'Party List B', imgHash: 'QmcPK8AG41dWofUPuk83d8BPf2Zd2dbv67tZ8oyfpXfk1H', candidacy: 'Senator'},
+                    {name: 'Senator M', partyList: 'Party List A', imgHash: 'QmPof7q59bV9mLACKqekWjv9AbAGvGGrQ1CoYdMjHXAhKc', candidacy: 'Senator'},
+                    {name: 'Senator N', partyList: 'Party List B', imgHash: 'QmW2Ko1dcELAiMbNxkDJSjG67QiHzrsAvhTzWG92oHGsFq', candidacy: 'Senator'}
+                ];
+
+                for (let sampleSenator of sampleSenators) {
+                    this.contract.methods
+                        .registerCandidate(
+                            web3.utils.asciiToHex(sampleSenator.name),
+                            web3.utils.asciiToHex(sampleSenator.partyList),
+                            sampleSenator.imgHash,
+                            sampleSenator.candidacy)
+                        .send({
+                            from: this.defaultAccount,
+                            gas: 1000000
+                        });
                 }
             }
         }

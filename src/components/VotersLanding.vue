@@ -6,8 +6,7 @@
 
         <div class="center">
             <div class="container-fluid">
-
-                <b-alert v-model="showDismissibleAlert" variant="dark" dismissible>
+                <b-alert v-model="showDismissibleAlert" variant="dark" dismissible fade>
                     Invalid Voter Log-in: {{ invalidLoginReason }}
                 </b-alert>
 
@@ -79,16 +78,23 @@
             initParticlesJS() {
                 particlesJS('particles-js', ParticleSettings);
             },
+            displayNotification(invalidLoginReason) {
+                this.showDismissibleAlert = true;
+                this.invalidLoginReason = invalidLoginReason;
+            },
             loginVoter: async function () {
-                let voterTuple = await this.contract
-                                           .methods
-                                           .getVoterByName(web3.utils.asciiToHex(this.voterName))
-                                           .call();
-
-                if (voterTuple === null) {
-                    this.showDismissibleAlert = true;
-                    this.invalidLoginReason = "No Retrieved Data."
-                    return;
+                let voterTuple;
+                try {
+                    voterTuple = await this.contract
+                                            .methods
+                                            .getVoterByName(web3.utils.asciiToHex(this.voterName))
+                                            .call();
+                }
+                catch(err) {
+                    if (err.message.slice(74, 92) == 'Unregistered Voter') {
+                        this.displayNotification('Unregistered Voter');
+                        return;
+                    }
                 }
 
                 this.voter = {
@@ -96,15 +102,8 @@
                     valid: voterTuple[1]
                 }
 
-                if (this.voter.name === "") {
-                    this.showDismissibleAlert = true;
-                    this.invalidLoginReason = "You are not a registered Voter"
-                    return;
-                }
-
                 if (this.voter.valid === false) {
-                    this.showDismissibleAlert = true;
-                    this.invalidLoginReason = "You are no longer a Valid Voter"
+                    this.displayNotification('You are no longer a valid voter');
                     return;
                 }
 
