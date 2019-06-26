@@ -92,7 +92,7 @@
 
             <div class="row">
                 <div class="col-4 offset-4">
-                    <b-alert v-model="showDismissibleAlert" false="dark" dismissible fade>
+                    <b-alert v-model="showDismissibleAlert" variant="dark" dismissible fade>
                         {{ notification }}
                     </b-alert>
                 </div>
@@ -112,6 +112,7 @@
 <script>
     require('particles.js')
     import ParticleSettings from './../assets/particles.json';
+    import router from './../router.js';
 
     const Web3 = require('web3');
     const web3 = new Web3('ws://localhost:8545', null, {});
@@ -122,7 +123,6 @@
                 showDismissibleAlert: false,
                 invalidLoginReason: null,
 
-                voterLoggedIn: false,
                 voterName: null,
                 voter: null,
 
@@ -230,14 +230,27 @@
             },
             finishVoting: async function () {
 
+                if (this.chosenPres === null) {
+                    this.displayNotification('You must elect a President');
+                    return;
+                }
+                else if (this.chosenVicePres === null) {
+                    this.displayNotification('You must elect a Vice President');
+                    return;
+                }
+                else if (this.chosenSenators.length === 0) {
+                    this.displayNotification('You must elect at least 1 Senator');
+                    return;
+                }
+                else {
+                    this.displayNotification('Successful Voting');
+                }
+
                 this.voteCandidate(this.chosenPres, 'President');
                 this.voteCandidate(this.chosenVicePres, 'Vice President');
-
-
-                for (let i=0; i<this.chosenSenators.length; i++) {
+                for (let i=0; i < this.chosenSenators.length; i++) {
                     this.voteCandidate(this.chosenSenators[i], 'Senator');
                 }
-                this.displayNotification('Successful Voting');
 
                 await this.contract
                           .methods
@@ -245,6 +258,8 @@
                           .send({
                               from: this.defaultAccount
                           });
+
+                router.push({ name: 'voters'});
             },
             logoutVoter: function () {
                 this.voter = null;

@@ -5,7 +5,7 @@
         <div id="main" class="container-fluid">
             <div class="row">
                 <div class="col-6 offset-3">
-                    <b-alert v-model="showDismissibleAlert" false="dark" dismissible fade>
+                    <b-alert v-model="showDismissibleAlert" variant="dark" dismissible fade>
                         {{ notification }}
                     </b-alert>
                 </div>
@@ -16,18 +16,7 @@
                     <h1 class="display-2 text-white">Admin Page</h1>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-3 offset-3">
-                    <button class="btn btn-lg btn-outline-light btn-block mt-4" v-b-modal.setupElectionModal>
-                        Setup Election
-                    </button>
-                </div>
-                <div class="col-3">
-                    <button class="btn btn-lg btn-outline-light btn-block mt-4" @click="publishResults">
-                        Publish Results
-                    </button>
-                </div>
-            </div>
+
             <div class="row">
                 <div class="col-3 offset-3">
                     <button class="btn btn-lg btn-outline-light btn-block mt-4" v-b-modal.regCandidateModal>
@@ -40,6 +29,20 @@
                     </button>
                 </div>
             </div>
+
+            <div class="row">
+                <div class="col-3 offset-3">
+                    <button class="btn btn-lg btn-outline-light btn-block mt-4" v-b-modal.setupElectionModal>
+                        Setup Election
+                    </button>
+                </div>
+                <div class="col-3">
+                    <button class="btn btn-lg btn-outline-light btn-block mt-4" @click="publishResults">
+                        Publish Results
+                    </button>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-3 offset-3">
                     <button class="btn btn-lg btn-outline-light btn-block mt-4" @click="populateSampleCandidates">
@@ -337,6 +340,20 @@
                 router.push({name: 'results'});
             },
             registerCandidate: async function () {
+
+                if (this.candidate.name === null ||
+                    this.candidate.partyList === null ||
+                    this.candidate.candidacy === '')
+                {
+                    this.displayNotification('Invalid Candidate Registration Inputs');
+                    return;
+                }
+
+                if (this.buffer === null || this.buffer === '') {
+                    this.displayNotification('Please Upload Candidate Photo');
+                    return;
+                }
+
                 let hash = await ipfs.add(this.buffer);
                 this.candidate.imgHash = hash[0].hash;
 
@@ -352,7 +369,12 @@
                     },
                     (error) => {
                         if (error) {
-                            this.displayNotification(error.message.slice(74, 97));
+                            if (error.message.slice(74, 97) === 'Registration Prohibited') {
+                                this.displayNotification('Registration Prohibited');
+                            }
+                            else {
+                                this.displayNotification(error.message);
+                            }
                             return;
                         }
                         this.displayNotification(`Candidate ${this.candidate.name} for ${this.candidate.candidacy} has been successfully registered.`);

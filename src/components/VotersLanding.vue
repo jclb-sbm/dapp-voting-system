@@ -107,7 +107,6 @@
                     return;
                 }
 
-                this.gIsVoterLoggedIn = true;
                 router.push({ name: 'voter', params: { id: this.voter.name, valid: this.voter.valid }});
             },
         }

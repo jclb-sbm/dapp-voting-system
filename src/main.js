@@ -14,15 +14,6 @@ Vue.use(datePicker);
 
 Vue.config.productionTip = false
 
-Vue.mixin({
-  data: function() {
-    return {
-      gIsVoterLoggedIn: false,
-      gVoter: null
-    }
-  }
-})
-
 new Vue({
   router,
   render: h => h(App),
