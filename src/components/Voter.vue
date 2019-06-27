@@ -200,7 +200,8 @@
                     let candidate = {
                         name: web3.utils.hexToUtf8(candidateTuple[0]),
                         partyList: web3.utils.hexToUtf8(candidateTuple[1]),
-                        imgHash: `http://127.0.0.1:8080/ipfs/${candidateTuple[2]}`,
+                        // imgHash: `http://127.0.0.1:8080/ipfs/${candidateTuple[2]}`,
+                        imgHash: `https://ipfs.infura.io/ipfs/${candidateTuple[2]}`,
                         votes: candidateTuple[3]
                     }
                     this.presCandidates.push(candidate);
@@ -211,7 +212,8 @@
                     let candidate = {
                         name: web3.utils.hexToUtf8(candidateTuple[0]),
                         partyList: web3.utils.hexToUtf8(candidateTuple[1]),
-                        imgHash: `http://127.0.0.1:8080/ipfs/${candidateTuple[2]}`,
+                        // imgHash: `http://127.0.0.1:8080/ipfs/${candidateTuple[2]}`,
+                        imgHash: `https://ipfs.infura.io/ipfs/${candidateTuple[2]}`,
                         votes: candidateTuple[3]
                     }
                     this.vicePresCandidates.push(candidate);
@@ -222,7 +224,8 @@
                     let candidate = {
                         name: web3.utils.hexToUtf8(candidateTuple[0]),
                         partyList: web3.utils.hexToUtf8(candidateTuple[1]),
-                        imgHash: `http://127.0.0.1:8080/ipfs/${candidateTuple[2]}`,
+                        // imgHash: `http://127.0.0.1:8080/ipfs/${candidateTuple[2]}`,
+                        imgHash: `https://ipfs.infura.io/ipfs/${candidateTuple[2]}`,
                         votes: candidateTuple[3]
                     }
                     this.senCandidates.push(candidate);

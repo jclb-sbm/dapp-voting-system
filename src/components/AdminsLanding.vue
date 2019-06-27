@@ -190,12 +190,13 @@
     import router from './../router.js';
 
     const Web3 = require('web3');
-    const IPFS = require('ipfs-http-client')
+    const IPFS = require('ipfs-http-client');
     const moment = require('moment');
 
     const Buffer = IPFS.Buffer;
     const web3 = new Web3('ws://localhost:8545', null, {});
-    const ipfs = new IPFS('/ip4/127.0.0.1/tcp/5001');
+    // const ipfs = new IPFS('/ip4/127.0.0.1/tcp/5001');
+    const ipfs = new IPFS('ipfs.infura.io', '5001', {protocol: 'https'});
 
     export default {
         data() {
