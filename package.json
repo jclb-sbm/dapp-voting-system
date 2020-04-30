@@ -19,7 +19,7 @@
     "ganache-cli": "^6.4.4",
     "ganache-core": "^2.5.6",
     "ipfs": "^0.36.4",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "moment": "^2.24.0",
     "particles.js": "^2.0.0",
     "pc-bootstrap4-datetimepicker": "^4.17.50",
